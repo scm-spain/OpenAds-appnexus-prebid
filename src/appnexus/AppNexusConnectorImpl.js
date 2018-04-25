@@ -1,8 +1,9 @@
-import AppNexusConnector from './AppNexusConnector'
-
-export default class AppNexusConnectorImpl extends AppNexusConnector {
+/**
+ * @class
+ * @implements {AppNexusConnector}
+ */
+export default class AppNexusConnectorImpl {
   constructor ({source, connectorData, appNexusClient, logger}) {
-    super()
     this._configuration = connectorData
     this._source = source
     this._member = this._configuration.Member
