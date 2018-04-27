@@ -1,20 +1,20 @@
-import AppNexusClient from './AppNexusClient'
-import AppNexusConnectorImpl from './AppNexusConnectorImpl'
-import {AD_AVAILABLE, AD_BAD_REQUEST, AD_ERROR, AD_NO_BID, AD_REQUEST_FAILURE} from './event/events'
-import PullingAdRepository from './repository/PullingAdRepository'
+import AppNexusClient from './openads-appnexus/AppNexusClient'
+import AppNexusConnectorImpl from './openads-appnexus/AppNexusConnectorImpl'
+import {AD_AVAILABLE, AD_BAD_REQUEST, AD_ERROR, AD_NO_BID, AD_REQUEST_FAILURE} from './openads-appnexus/event/events'
+import PullingAdRepository from './openads-appnexus/repository/PullingAdRepository'
 
 /**
  * @class
  * @implements {AdLoadable}
  * @implements {AdViewable}
+ * @implements {AdConnectorIdentifier}
  */
 export default class AdConnector {
-  constructor ({configuration, logger}) {
+  constructor ({configuration}) {
     this._appNexusConnectorImpl = new AppNexusConnectorImpl({
       source: SOURCE_NAME,
       connectorData: configuration,
-      appNexusClient: AppNexusClient.build(),
-      logger: logger
+      appNexusClient: AppNexusClient.build()
     })
     this._pullingAdRepository = new PullingAdRepository()
   }
@@ -64,11 +64,27 @@ export default class AdConnector {
       .then(appNexusConnectorImpl => appNexusConnectorImpl.loadTags())
       .then(() => this._pullingAdRepository.find({id: domElementId}))
   }
-  refresh ({ids}) {
+  refresh ({id, segmentation}) {
     return Promise.resolve()
-      .then(() => this._pullingAdRepository.remove({ids}))
-      .then(() => this._appNexusConnectorImpl.refresh(ids))
-      .then(null)
+      .then(() => this._pullingAdRepository.remove({id}))
+      .then(() => {
+        if (segmentation) {
+          this._appNexusConnectorImpl.modifyTag({
+            targetId: id,
+            data: {
+              invCode: segmentation.placement,
+              sizes: segmentation.sizes,
+              keywords: segmentation.keywords
+            }
+          })
+        }
+      })
+      .then(() => this._appNexusConnectorImpl.refresh([id]))
+      .then(() => this._pullingAdRepository.find({id}))
+  }
+
+  id () {
+    return this._appNexusConnectorImpl.source
   }
 }
 const SOURCE_NAME = 'AppNexus'

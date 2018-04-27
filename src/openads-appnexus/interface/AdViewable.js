@@ -13,10 +13,11 @@ export default class AdViewable {
 
   /**
    * Returns and empty Promise when the refresh operation has finished
-   * @param {Array<string>} ids An array which contains the unique identifiers of positions to be refreshed
+   * @param {string} id The unique identifier of the position
+   * @param {segmentation} segmentation Data to be updated for the position
    * @returns {Promise} Promise object representing when the operation finish
    */
-  refresh ({ids}) {
+  refresh ({id, segmentation}) {
     throw new Error('AdViewable#refresh must be implemented')
   }
 }

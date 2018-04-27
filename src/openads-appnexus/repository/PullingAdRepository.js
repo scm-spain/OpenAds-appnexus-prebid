@@ -24,9 +24,8 @@ export default class PullingAdRepository {
     this._ads.set(id, adResponse)
   }
 
-  remove ({ids}) {
-    return Promise.resolve(ids)
-      .then(ids => ids.forEach(id => this._ads.delete(id)))
+  remove ({id}) {
+    return this._ads.delete(id)
   }
 
   _waitForData ({id}) {
