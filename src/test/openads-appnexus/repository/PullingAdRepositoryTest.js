@@ -1,7 +1,6 @@
 import {expect} from 'chai'
 import PullingAdRepository from '../../../openads-appnexus/repository/PullingAdRepository'
 
-
 describe('Pulling Ad Repository', () => {
   describe('find method', () => {
     it('should return a Promise', () => {

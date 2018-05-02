@@ -10,10 +10,10 @@ import PullingAdRepository from './openads-appnexus/repository/PullingAdReposito
  * @implements {AdConnectorIdentifier}
  */
 export default class AdConnector {
-  constructor ({configuration}) {
+  constructor ({source, member}) {
     this._appNexusConnectorImpl = new AppNexusConnectorImpl({
-      source: SOURCE_NAME,
-      connectorData: configuration,
+      source: source,
+      member: member,
       appNexusClient: AppNexusClient.build()
     })
     this._pullingAdRepository = new PullingAdRepository()
@@ -87,6 +87,5 @@ export default class AdConnector {
     return this._appNexusConnectorImpl.source
   }
 }
-const SOURCE_NAME = 'AppNexus'
 const consumer = pullingAdRepository => id => status => data =>
   pullingAdRepository.save({id, adResponse: {data, status}})

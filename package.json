@@ -31,9 +31,9 @@
     "babel-preset-sui": "1",
     "babel-register": "^6.24.0",
     "chai": "^4.0.2",
-    "codecov": "^3.0.0",
+    "codecov": "^3.0.1",
     "istanbul": "^1.1.0-alpha.1",
-    "jsdom": "^11.5.1",
+    "jsdom": "^11.10.0",
     "mocha": "^3.4.2",
     "onchange": "^3.3.0",
     "sinon": "^2.3.4"
