@@ -1,148 +1,148 @@
 
 import {expect} from 'chai'
 import sinon from 'sinon'
-import AppNexusConnectorImpl from '../../openads-appnexus/AppNexusConnectorImpl'
+import AstClientImpl from '../../openads-appnexus/AstClientImpl'
 
-describe('AppNexusConnectorImpl implementation', function () {
+describe('AstClient implementation', function () {
   describe('given valid constructor parameters', function () {
-    it('should create a new instance of AppNexusConnectorImpl according to parameters', function () {
+    it('should create a new instance of AstClientImpl according to parameters', function () {
       const source = 'AppNexus'
       const member = 3296
-      let appNexusClientMock = {}
+      let astWrapperMock = {}
 
-      const appNexusConnector = new AppNexusConnectorImpl({source, member, appNexusClientMock})
-      expect(appNexusConnector.member).to.equal(3296)
+      const astClient = new AstClientImpl({source, member, astWrapper: astWrapperMock})
+      expect(astClient.member).to.equal(3296)
     })
 
-    it('should create a new instance of AppNexusConnectorImpl and set debug mode to true', function () {
+    it('should create a new instance of AstClientImpl and set debug mode to true', function () {
       const source = 'AppNexus'
       const member = 3296
-      let appNexusClientMock = {
+      let astWrapperMock = {
         'debug': false
       }
-      const appNexusConnector = new AppNexusConnectorImpl({
+      const astClient = new AstClientImpl({
         source,
         member,
-        appNexusClient: appNexusClientMock
+        astWrapper: astWrapperMock
       })
-      const mutatedAppNexusConnector = appNexusConnector.activateDebugMode()
+      const mutatedAstClient = astClient.activateDebugMode()
 
-      expect(appNexusClientMock.debug).to.be.true
-      expect(mutatedAppNexusConnector).to.be.an.instanceof(AppNexusConnectorImpl)
+      expect(astWrapperMock.debug).to.be.true
+      expect(mutatedAstClient).to.be.an.instanceof(AstClientImpl)
     })
 
-    it('should create a new instance of AppNexusConnectorImpl and push setPageOpts function to the queue', function () {
+    it('should create a new instance of AstClientImpl and push setPageOpts function to the queue', function () {
       const source = 'AppNexus'
       const member = 3296
       let appNexusQueue = []
       const qSpy = sinon.spy(appNexusQueue, 'push')
-      let appNexusClientMock = {
+      let astWrapperMock = {
         anq: appNexusQueue,
         setPageOpts: ({member, keywords}) => undefined
       }
-      const appNexusConnector = new AppNexusConnectorImpl({
+      const astClient = new AstClientImpl({
         source,
         member,
-        appNexusClient: appNexusClientMock
+        astWrapper: astWrapperMock
       })
-      const mutatedAppNexusConnector = appNexusConnector.setPageOpts({
+      const mutatedAstClient = astClient.setPageOpts({
         member: 3296,
         keywords: 'forlayo&minglanillas'
       })
 
-      expect(appNexusClientMock.anq).to.have.lengthOf(1)
+      expect(astWrapperMock.anq).to.have.lengthOf(1)
       expect(qSpy.called).to.be.true
-      expect(mutatedAppNexusConnector).to.be.an.instanceof(AppNexusConnectorImpl)
+      expect(mutatedAstClient).to.be.an.instanceof(AstClientImpl)
     })
 
-    it('should create a new instance of AppNexusConnectorImpl and push onEvent function to the queue', function () {
+    it('should create a new instance of AstClientImpl and push onEvent function to the queue', function () {
       const source = 'AppNexus'
       const member = 3296
       let appNexusQueue = []
       const qSpy = sinon.spy(appNexusQueue, 'push')
-      let appNexusClientMock = {
+      let astWrapperMock = {
         anq: appNexusQueue,
         onEvent: ({event, targetId, callback}) => undefined
       }
-      const appNexusConnector = new AppNexusConnectorImpl({
+      const astClient = new AstClientImpl({
         source,
         member,
-        appNexusClient: appNexusClientMock
+        astWrapper: astWrapperMock
       })
-      const mutatedAppNexusConnector = appNexusConnector.onEvent({
+      const mutatedAstClient = astClient.onEvent({
         callback: () => undefined,
         event: 'adAvailable',
         targetId: 'forlayoDiv'
       })
 
-      expect(appNexusClientMock.anq).to.have.lengthOf(1)
+      expect(astWrapperMock.anq).to.have.lengthOf(1)
       expect(qSpy.called).to.be.true
-      expect(mutatedAppNexusConnector).to.be.an.instanceof(AppNexusConnectorImpl)
+      expect(mutatedAstClient).to.be.an.instanceof(AstClientImpl)
     })
 
-    it('should create a new instance of AppNexusConnectorImpl and push defineTag function to the queue', function () {
+    it('should create a new instance of AstClientImpl and push defineTag function to the queue', function () {
       const source = 'AppNexus'
       const member = 3296
       let appNexusQueue = []
       const qSpy = sinon.spy(appNexusQueue, 'push')
-      let appNexusClientMock = {
+      let astWrapperMock = {
         anq: appNexusQueue,
         defineTag: ({invCode, sizes, targetId}) => undefined
       }
-      const appNexusConnector = new AppNexusConnectorImpl({
+      const astClient = new AstClientImpl({
         source,
         member,
-        appNexusClient: appNexusClientMock
+        astWrapper: astWrapperMock
       })
-      const mutatedAppNexusConnector = appNexusConnector.defineTag({
+      const mutatedAstClient = astClient.defineTag({
         targetId: 'forlayoDiv',
         invCode: 'lalla',
         sizes: [728, 90]
       })
 
-      expect(appNexusClientMock.anq).to.have.lengthOf(1)
+      expect(astWrapperMock.anq).to.have.lengthOf(1)
       expect(qSpy.called).to.be.true
-      expect(mutatedAppNexusConnector).to.be.an.instanceof(AppNexusConnectorImpl)
+      expect(mutatedAstClient).to.be.an.instanceof(AstClientImpl)
     })
-    it('should create a new instance of AppNexusConnectorImpl and push loadTags function to the queue', function () {
+    it('should create a new instance of AstClientImpl and push loadTags function to the queue', function () {
       const source = 'AppNexus'
       const member = 3296
       let appNexusQueue = []
       const qSpy = sinon.spy(appNexusQueue, 'push')
-      let appNexusClientMock = {
+      let astWrapperMock = {
         anq: appNexusQueue,
         loadTags: () => undefined
       }
-      const appNexusConnector = new AppNexusConnectorImpl({
+      const astClient = new AstClientImpl({
         source,
         member,
-        appNexusClient: appNexusClientMock
+        astWrapper: astWrapperMock
       })
-      const mutatedAppNexusConnector = appNexusConnector.loadTags()
+      const mutatedAstClient = astClient.loadTags()
 
-      expect(appNexusClientMock.anq).to.have.lengthOf(1)
+      expect(astWrapperMock.anq).to.have.lengthOf(1)
       expect(qSpy.called).to.be.true
-      expect(mutatedAppNexusConnector).to.be.an.instanceof(AppNexusConnectorImpl)
+      expect(mutatedAstClient).to.be.an.instanceof(AstClientImpl)
     })
-    it('should create a new instance of AppNexusConnectorImpl and push showTag function to the queue', function () {
+    it('should create a new instance of AstClientImpl and push showTag function to the queue', function () {
       const source = 'AppNexus'
       const member = 3296
       let appNexusQueue = []
       const qSpy = sinon.spy(appNexusQueue, 'push')
-      let appNexusClientMock = {
+      let astWrapperMock = {
         anq: appNexusQueue,
         showTag: ({target}) => undefined
       }
-      const appNexusConnector = new AppNexusConnectorImpl({
+      const astClient = new AstClientImpl({
         source,
         member,
-        appNexusClient: appNexusClientMock
+        astWrapper: astWrapperMock
       })
-      const mutatedAppNexusConnector = appNexusConnector.showTag({target: 'Odin'})
+      const mutatedAstClient = astClient.showTag({target: 'Odin'})
 
-      expect(appNexusClientMock.anq).to.have.lengthOf(1)
+      expect(astWrapperMock.anq).to.have.lengthOf(1)
       expect(qSpy.called).to.be.true
-      expect(mutatedAppNexusConnector).to.be.an.instanceof(AppNexusConnectorImpl)
+      expect(mutatedAstClient).to.be.an.instanceof(AstClientImpl)
     })
   })
   describe('Given two events registered for two different targets', () => {
@@ -160,20 +160,20 @@ describe('AppNexusConnectorImpl implementation', function () {
         const appNexusQueue = {
           push: (f) => f()
         }
-        const appNexusClientMock = {
+        const astWrapperMock = {
           anq: appNexusQueue,
           clearRequest: () => null,
           offEvent: () => null,
           onEvent: () => null
         }
-        const onEventSpy = sinon.spy(appNexusClientMock, 'onEvent')
+        const onEventSpy = sinon.spy(astWrapperMock, 'onEvent')
 
-        const appNexusConnector = new AppNexusConnectorImpl({
-          appNexusClient: appNexusClientMock,
+        const astClient = new AstClientImpl({
+          astWrapper: astWrapperMock,
           source: {},
           connectorData: {}
         })
-        appNexusConnector
+        astClient
           .onEvent(this.givenEvent11)
           .onEvent(this.givenEvent12)
           .onEvent(this.givenEvent21)
@@ -187,20 +187,20 @@ describe('AppNexusConnectorImpl implementation', function () {
         const appNexusQueue = {
           push: (f) => f()
         }
-        const appNexusClientMock = {
+        const astWrapperMock = {
           anq: appNexusQueue,
           clearRequest: () => null,
           offEvent: () => null,
           onEvent: () => null
         }
-        const offEventSpy = sinon.spy(appNexusClientMock, 'offEvent')
+        const offEventSpy = sinon.spy(astWrapperMock, 'offEvent')
 
-        const appNexusConnector = new AppNexusConnectorImpl({
-          appNexusClient: appNexusClientMock,
+        const astClient = new AstClientImpl({
+          astWrapper: astWrapperMock,
           source: '',
           member: 0
         })
-        appNexusConnector
+        astClient
           .onEvent(this.givenEvent11)
           .onEvent(this.givenEvent12)
           .onEvent(this.givenEvent21)
@@ -218,7 +218,7 @@ describe('AppNexusConnectorImpl implementation', function () {
       const appNexusQueue = {
         push: (f) => f()
       }
-      const appNexusClientMock = {
+      const astWrapperMock = {
         anq: appNexusQueue,
         setPageOpts: () => null,
         defineTag: () => null,
@@ -227,17 +227,17 @@ describe('AppNexusConnectorImpl implementation', function () {
         refresh: () => null,
         modifyTag: () => null
       }
-      const setPageOptsSpy = sinon.spy(appNexusClientMock, 'setPageOpts')
-      const defineTagSpy = sinon.spy(appNexusClientMock, 'defineTag')
-      const loadTagsSpy = sinon.spy(appNexusClientMock, 'loadTags')
-      const showTagSpy = sinon.spy(appNexusClientMock, 'showTag')
-      const modifyTagSpy = sinon.spy(appNexusClientMock, 'modifyTag')
-      const refreshSpy = sinon.spy(appNexusClientMock, 'refresh')
+      const setPageOptsSpy = sinon.spy(astWrapperMock, 'setPageOpts')
+      const defineTagSpy = sinon.spy(astWrapperMock, 'defineTag')
+      const loadTagsSpy = sinon.spy(astWrapperMock, 'loadTags')
+      const showTagSpy = sinon.spy(astWrapperMock, 'showTag')
+      const modifyTagSpy = sinon.spy(astWrapperMock, 'modifyTag')
+      const refreshSpy = sinon.spy(astWrapperMock, 'refresh')
 
-      const appNexusConnectorImpl = new AppNexusConnectorImpl({
+      const astClient = new AstClientImpl({
         source,
         member,
-        appNexusClient: appNexusClientMock
+        astWrapper: astWrapperMock
       })
 
       const givenPageOpts = {member: 1111, keywords: {p1: 'pv1'}}
@@ -245,7 +245,7 @@ describe('AppNexusConnectorImpl implementation', function () {
       const givenShowTag = {target: 'Ad1'}
       const givenModifyTag = {targetId: 'Ad1', data: {member: 2223, invCode: 'inv2', sizes: [[1, 1]], keywords: {p3: 'pv3'}, native: {}}}
       const givenRefresh = ['Ad1', 'Ad2']
-      appNexusConnectorImpl
+      astClient
         .setPageOpts(givenPageOpts)
         .defineTag(givenDefineTag)
         .loadTags()

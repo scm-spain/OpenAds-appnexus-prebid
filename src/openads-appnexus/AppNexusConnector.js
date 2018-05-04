@@ -1,87 +1,91 @@
+import AstClientImpl from './AstClientImpl'
+import AstWrapper from './AstWrapper'
+import PullingAdRepository from './repository/PullingAdRepository'
+import {AD_AVAILABLE, AD_BAD_REQUEST, AD_ERROR, AD_NO_BID, AD_REQUEST_FAILURE} from './event/events'
+
 /**
- * @interface
+ * @class
+ * @implements {AdLoadable}
+ * @implements {AdViewable}
+ * @implements {AdConnectorIdentifier}
  */
 export default class AppNexusConnector {
-  /**
-   * Activates the Debug mode.
-   */
-  activateDebugMode () {
-    throw new Error('AppNexusConnector#activateDebugMode must be implemented')
+  constructor ({source, member}) {
+    this._astClient = new AstClientImpl({
+      source: source,
+      member: member,
+      astWrapper: AstWrapper.build()
+    })
+    this._pullingAdRepository = new PullingAdRepository()
   }
 
-  /**
-   * Sets page options.
-   * @param member
-   * @param keywords
-   */
-  setPageOpts ({member, keywords}) {
-    throw new Error('AppNexusConnector#setPageOpts must be implemented')
+  display ({id}) {
+    return Promise.resolve()
+      .then(() => this._astClient.showTag({target: id}))
+      .then(null)
   }
 
-  /**
-   * Defines onEvent
-   * @param event
-   * @param targetId
-   * @param callback
-   */
-  onEvent ({event, targetId, callback}) {
-    throw new Error('AppNexusConnector#onEvent must be implemented')
+  loadAd ({domElementId, placement, sizes, segmentation, native}) {
+    return Promise.resolve()
+      .then(() => this._astClient
+        .defineTag({
+          member: this._astClient.member,
+          targetId: domElementId,
+          invCode: placement,
+          sizes: sizes,
+          keywords: segmentation,
+          native: native
+        }))
+      .then(astClient => astClient.onEvent({
+        event: AD_AVAILABLE,
+        targetId: domElementId,
+        callback: consumer(this._pullingAdRepository)(domElementId)(AD_AVAILABLE)
+      }))
+      .then(astClient => astClient.onEvent({
+        event: AD_BAD_REQUEST,
+        targetId: domElementId,
+        callback: consumer(this._pullingAdRepository)(domElementId)(AD_BAD_REQUEST)
+      }))
+      .then(astClient => astClient.onEvent({
+        event: AD_ERROR,
+        targetId: domElementId,
+        callback: consumer(this._pullingAdRepository)(domElementId)(AD_ERROR)
+      }))
+      .then(astClient => astClient.onEvent({
+        event: AD_NO_BID,
+        targetId: domElementId,
+        callback: consumer(this._pullingAdRepository)(domElementId)(AD_NO_BID)
+      }))
+      .then(astClient => astClient.onEvent({
+        event: AD_REQUEST_FAILURE,
+        targetId: domElementId,
+        callback: consumer(this._pullingAdRepository)(domElementId)(AD_REQUEST_FAILURE)
+      }))
+      .then(astClient => astClient.loadTags())
+      .then(() => this._pullingAdRepository.find({id: domElementId}))
+  }
+  refresh ({id, segmentation}) {
+    return Promise.resolve()
+      .then(() => this._pullingAdRepository.remove({id}))
+      .then(() => {
+        if (segmentation) {
+          this._astClient.modifyTag({
+            targetId: id,
+            data: {
+              invCode: segmentation.placement,
+              sizes: segmentation.sizes,
+              keywords: segmentation.keywords
+            }
+          })
+        }
+      })
+      .then(() => this._astClient.refresh([id]))
+      .then(() => this._pullingAdRepository.find({id}))
   }
 
-  /**
-   * Method to define tags.
-   * @param member
-   * @param targetId
-   * @param invCode
-   * @param sizes
-   * @param keywords
-   * @param native
-   */
-  defineTag ({member, targetId, invCode, sizes, keywords, native}) {
-    throw new Error('AppNexusConnector#defineTag must be implemented')
-  }
-
-  /**
-   * Load tags.
-   */
-  loadTags () {
-    throw new Error('AppNexusConnector#loadTags must be implemented')
-  }
-
-  /**
-   * Shows tags in the target.
-   * @param target
-   */
-  showTag ({target}) {
-    throw new Error('AppNexusConnector#showTag must be implemented')
-  }
-
-  /**
-   * Resets the state to it's pre uninitialized state.
-   */
-  reset () {
-    throw new Error('AppNexusConnector#clearRequest must be implemented')
-  }
-
-  /**
-   * Refreshes ads on the page.
-   * @param target : an array of ids
-   */
-  refresh (target) {
-    throw new Error('AppNexusConnector#refresh must be implemented')
-  }
-
-  /**
-   * Updates tag information.
-   * @param targetId : an array of ids
-   * @param data : the data to update
-   * @param data.member
-   * @param data.invCode
-   * @param data.sizes
-   * @param data.keywords
-   * @param data.native
-   */
-  modifyTag ({targetId, data}) {
-    throw new Error('AppNexusConnector#modifyTag must be implemented')
+  id () {
+    return this._astClient.source
   }
 }
+const consumer = pullingAdRepository => id => status => data =>
+  pullingAdRepository.save({id, adResponse: {data, status}})
