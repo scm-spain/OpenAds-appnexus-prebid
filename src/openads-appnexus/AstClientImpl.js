@@ -3,15 +3,10 @@
  * @implements {AstClient}
  */
 export default class AstClientImpl {
-  constructor ({source, member, astWrapper}) {
-    this._source = source
+  constructor ({member, astWrapper}) {
     this._member = member
     this._astWrapper = astWrapper
     this._registeredEvents = new Map()
-  }
-
-  get source () {
-    return this._source
   }
 
   get member () {
