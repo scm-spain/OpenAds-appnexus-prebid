@@ -1,6 +1,6 @@
 {
   "name": "@schibstedspain/openads-appnexus",
-  "version": "1.0.1",
+  "version": "1.0.0",
   "description": "OpenAds AppNexus module for handle ads",
   "main": "dist/",
   "scripts": {
