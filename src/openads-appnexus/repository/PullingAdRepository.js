@@ -3,7 +3,7 @@ const DEFAULT_TIMEOUT = 20000
 const DEFAULT_WAIT = 50
 
 export default class PullingAdRepository {
-  constructor ({wait = DEFAULT_WAIT, timeout = DEFAULT_TIMEOUT, ads = [[]]} = {}) {
+  constructor ({wait = DEFAULT_WAIT, timeout = DEFAULT_TIMEOUT, ads = []} = {}) {
     this._ads = new Map(ads)
     this._wait = wait
     this._timeout = timeout
