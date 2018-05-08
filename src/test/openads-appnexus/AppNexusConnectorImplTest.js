@@ -6,22 +6,19 @@ import AstClientImpl from '../../openads-appnexus/AstClientImpl'
 describe('AstClient implementation', function () {
   describe('given valid constructor parameters', function () {
     it('should create a new instance of AstClientImpl according to parameters', function () {
-      const source = 'AppNexus'
       const member = 3296
       let astWrapperMock = {}
 
-      const astClient = new AstClientImpl({source, member, astWrapper: astWrapperMock})
+      const astClient = new AstClientImpl({member, astWrapper: astWrapperMock})
       expect(astClient.member).to.equal(3296)
     })
 
     it('should create a new instance of AstClientImpl and set debug mode to true', function () {
-      const source = 'AppNexus'
       const member = 3296
       let astWrapperMock = {
         'debug': false
       }
       const astClient = new AstClientImpl({
-        source,
         member,
         astWrapper: astWrapperMock
       })
@@ -32,7 +29,6 @@ describe('AstClient implementation', function () {
     })
 
     it('should create a new instance of AstClientImpl and push setPageOpts function to the queue', function () {
-      const source = 'AppNexus'
       const member = 3296
       let appNexusQueue = []
       const qSpy = sinon.spy(appNexusQueue, 'push')
@@ -41,7 +37,6 @@ describe('AstClient implementation', function () {
         setPageOpts: ({member, keywords}) => undefined
       }
       const astClient = new AstClientImpl({
-        source,
         member,
         astWrapper: astWrapperMock
       })
@@ -56,7 +51,6 @@ describe('AstClient implementation', function () {
     })
 
     it('should create a new instance of AstClientImpl and push onEvent function to the queue', function () {
-      const source = 'AppNexus'
       const member = 3296
       let appNexusQueue = []
       const qSpy = sinon.spy(appNexusQueue, 'push')
@@ -65,7 +59,6 @@ describe('AstClient implementation', function () {
         onEvent: ({event, targetId, callback}) => undefined
       }
       const astClient = new AstClientImpl({
-        source,
         member,
         astWrapper: astWrapperMock
       })
@@ -81,7 +74,6 @@ describe('AstClient implementation', function () {
     })
 
     it('should create a new instance of AstClientImpl and push defineTag function to the queue', function () {
-      const source = 'AppNexus'
       const member = 3296
       let appNexusQueue = []
       const qSpy = sinon.spy(appNexusQueue, 'push')
@@ -90,7 +82,6 @@ describe('AstClient implementation', function () {
         defineTag: ({invCode, sizes, targetId}) => undefined
       }
       const astClient = new AstClientImpl({
-        source,
         member,
         astWrapper: astWrapperMock
       })
@@ -105,7 +96,6 @@ describe('AstClient implementation', function () {
       expect(mutatedAstClient).to.be.an.instanceof(AstClientImpl)
     })
     it('should create a new instance of AstClientImpl and push loadTags function to the queue', function () {
-      const source = 'AppNexus'
       const member = 3296
       let appNexusQueue = []
       const qSpy = sinon.spy(appNexusQueue, 'push')
@@ -114,7 +104,6 @@ describe('AstClient implementation', function () {
         loadTags: () => undefined
       }
       const astClient = new AstClientImpl({
-        source,
         member,
         astWrapper: astWrapperMock
       })
@@ -125,7 +114,6 @@ describe('AstClient implementation', function () {
       expect(mutatedAstClient).to.be.an.instanceof(AstClientImpl)
     })
     it('should create a new instance of AstClientImpl and push showTag function to the queue', function () {
-      const source = 'AppNexus'
       const member = 3296
       let appNexusQueue = []
       const qSpy = sinon.spy(appNexusQueue, 'push')
@@ -134,7 +122,6 @@ describe('AstClient implementation', function () {
         showTag: ({target}) => undefined
       }
       const astClient = new AstClientImpl({
-        source,
         member,
         astWrapper: astWrapperMock
       })
@@ -170,7 +157,6 @@ describe('AstClient implementation', function () {
 
         const astClient = new AstClientImpl({
           astWrapper: astWrapperMock,
-          source: {},
           connectorData: {}
         })
         astClient
@@ -197,7 +183,6 @@ describe('AstClient implementation', function () {
 
         const astClient = new AstClientImpl({
           astWrapper: astWrapperMock,
-          source: '',
           member: 0
         })
         astClient
@@ -213,7 +198,6 @@ describe('AstClient implementation', function () {
   })
   describe('Given an AppNexusConnector with an AppNexusClient', () => {
     it('Should call client methods', () => {
-      const source = ''
       const member = 0
       const appNexusQueue = {
         push: (f) => f()
@@ -235,7 +219,6 @@ describe('AstClient implementation', function () {
       const refreshSpy = sinon.spy(astWrapperMock, 'refresh')
 
       const astClient = new AstClientImpl({
-        source,
         member,
         astWrapper: astWrapperMock
       })

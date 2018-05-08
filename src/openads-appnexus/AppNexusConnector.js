@@ -7,12 +7,10 @@ import {AD_AVAILABLE, AD_BAD_REQUEST, AD_ERROR, AD_NO_BID, AD_REQUEST_FAILURE} f
  * @class
  * @implements {AdLoadable}
  * @implements {AdViewable}
- * @implements {AdConnectorIdentifier}
  */
 export default class AppNexusConnector {
-  constructor ({source, member}) {
+  constructor ({member}) {
     this._astClient = new AstClientImpl({
-      source: source,
       member: member,
       astWrapper: AstWrapper.build()
     })
@@ -81,10 +79,6 @@ export default class AppNexusConnector {
       })
       .then(() => this._astClient.refresh([id]))
       .then(() => this._pullingAdRepository.find({id}))
-  }
-
-  id () {
-    return this._astClient.source
   }
 }
 const consumer = pullingAdRepository => id => status => data =>
