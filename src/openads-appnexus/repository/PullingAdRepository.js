@@ -1,4 +1,5 @@
-const TIMEOUT_EXCEPTION = 'Timeout retrieving the Ad from the server'
+import PullingDataEntry from './PullingDataEntry'
+
 const DEFAULT_TIMEOUT = 20000
 const DEFAULT_WAIT = 50
 
@@ -10,14 +11,22 @@ export default class PullingAdRepository {
   }
 
   find ({id}) {
-    return Promise.race([
-      this._waitForData({id}),
-      this._timeoutPromise()
-    ])
+    return Promise.resolve(id)
+      .then(id => this.has({id}) ? this.getValue({id}) : this._pullForData({id}))
+  }
+
+  _pullForData ({id}) {
+    return Promise.resolve(id)
+      .then(id => new PullingDataEntry({id, adRepository: this, timeout: this._timeout, wait: this._wait}))
+      .then(pullingDataEntry => pullingDataEntry.waitForData())
   }
 
   has ({id}) {
-    return this._ads.has(id)
+    return this._ads.has(id) && this._ads.get(id) !== undefined
+  }
+
+  getValue ({id}) {
+    return this._ads.get(id)
   }
 
   save ({id, adResponse}) {
@@ -26,30 +35,5 @@ export default class PullingAdRepository {
 
   remove ({id}) {
     return this._ads.delete(id)
-  }
-
-  _waitForData ({id}) {
-    return Promise.resolve(this._ads.get(id))
-      .then(optionalAd => optionalAd || this._intervalPull(id))
-  }
-
-  _intervalPull (id) {
-    return new Promise(resolve => {
-      const stopper = setInterval(() => {
-        if (this._ads.has(id)) {
-          clearInterval(stopper)
-          resolve(this._ads.get(id))
-        }
-      }, this._wait)
-    })
-  }
-
-  _timeoutPromise () {
-    return new Promise((resolve, reject) => {
-      const wait = setTimeout(() => {
-        clearTimeout(wait)
-        reject(new Error(TIMEOUT_EXCEPTION))
-      }, this._timeout)
-    })
   }
 }

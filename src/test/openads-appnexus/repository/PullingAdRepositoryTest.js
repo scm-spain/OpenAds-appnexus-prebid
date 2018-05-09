@@ -9,8 +9,10 @@ describe('Pulling Ad Repository', () => {
     })
     it('should reject by timeout exception is data is not available at timeout time', (done) => {
       const givenTimeout = 50
+      const givenId = 'key1'
+
       const repository = new PullingAdRepository({timeout: givenTimeout})
-      repository.find({id: 'whatever'}).then(() => {
+      repository.find({id: givenId}).then((whatever) => {
         done(new Error('Should not end properly'))
       }).catch(e => {
         expect(e.message, 'Should be a timeout error').to.include('Timeout')
@@ -18,10 +20,11 @@ describe('Pulling Ad Repository', () => {
       })
     })
     it('should resolve properly when data is available', (done) => {
-      const givenAdIds = [['key1', 'value1']]
-      const repository = new PullingAdRepository({ads: givenAdIds})
-      repository.find({id: 'key1'}).then(data => {
-        expect(data).to.equal('value1')
+      const givenId = 'key1'
+      const givenValue = 'value1'
+      const repository = new PullingAdRepository({ads: [[givenId, givenValue]]})
+      repository.find({id: givenId}).then(data => {
+        expect(data).to.equal(givenValue)
         done()
       }).catch(e => done(e))
     })
