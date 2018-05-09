@@ -8,7 +8,7 @@ export default class PullingDataEntry {
     this._wait = wait
     this._dataPromise = Promise.race([
       this._createIntervalPromise({id}),
-      this._createTimeoutPromise({id})
+      this._createTimeoutPromise()
     ])
   }
 
