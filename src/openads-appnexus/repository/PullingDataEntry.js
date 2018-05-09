@@ -1,26 +1,44 @@
+const TIMEOUT_EXCEPTION = 'Timeout retrieving the Ad from the server'
+
 export default class PullingDataEntry {
-  constructor ({id, data}) {
+  constructor ({id, adRepository, timeout, wait}) {
     this._id = id
-    this._data = data
+    this._adRepository = adRepository
+    this._timeout = timeout
+    this._wait = wait
+    this._dataPromise = Promise.race([
+      this._createIntervalPromise({id}),
+      this._createTimeoutPromise({id})
+    ])
   }
-  get data () {
-    return this._data
-  }
+
   get id () {
     return this._id
   }
-  updateInterval (interval) {
-    if (this._interval) {
-      clearInterval(this._interval)
-    }
-    this._interval = interval
+
+  waitForData () {
+    return this._dataPromise
   }
-  removeInterval () {
-    if (this._interval) {
-      clearInterval(this._interval)
-    }
+
+  _createIntervalPromise ({id}) {
+    return new Promise(resolve => {
+      this._interval = setInterval(() => {
+        if (this._adRepository.has({id})) {
+          clearTimeout(this._timeout)
+          clearInterval(this._interval)
+          resolve(this._adRepository.getValue({id}))
+        }
+      }, this._wait)
+    })
   }
-  updateData (data) {
-    this._data = data
+
+  _createTimeoutPromise () {
+    return new Promise((resolve, reject) => {
+      this._timeout = setTimeout(() => {
+        clearInterval(this._interval)
+        clearTimeout(this._timeout)
+        reject(new Error(TIMEOUT_EXCEPTION))
+      }, this._timeout)
+    })
   }
 }
