@@ -12,10 +12,10 @@ export default class PullingAdRepository {
 
   find ({id}) {
     return Promise.resolve(id)
-      .then(id => this.has({id}) ? this.getValue({id}) : this._pulledData({id}))
+      .then(id => this.has({id}) ? this.getValue({id}) : this._pullForData({id}))
   }
 
-  _pulledData ({id}) {
+  _pullForData ({id}) {
     return Promise.resolve(id)
       .then(id => new PullingDataEntry({id, adRepository: this, timeout: this._timeout, wait: this._wait}))
       .then(pullingDataEntry => pullingDataEntry.waitForData())
