@@ -3,70 +3,49 @@
  * @implements {AstClient}
  */
 export default class AstClientImpl {
-  constructor ({member, astWrapper}) {
-    this._member = member
-    this._astWrapper = astWrapper
-    this._registeredEvents = new Map()
+  constructor ({logger, apnTag}) {
+    this._apnTag = apnTag
+    this._logger = logger
   }
 
-  get member () {
-    return this._member
-  }
-
-  activateDebugMode () {
-    this._astWrapper.debug = true
-    return this
-  }
-
-  setPageOpts ({member, keywords}) {
-    this._astWrapper.anq.push(() => this._astWrapper.setPageOpts({member, keywords}))
+  debugMode ({enabled}) {
+    this._apnTag.debug = enabled
     return this
   }
 
   onEvent ({event, targetId, callback}) {
-    this._astWrapper.anq.push(() => {
-      this._astWrapper.onEvent(event, targetId, callback)
-      if (!this._registeredEvents.has(targetId)) {
-        this._registeredEvents.set(targetId, [])
-      }
-      this._registeredEvents.get(targetId).push(event)
-    })
+    this._logger.debug('onEvent | event:', event, '| targetId:', targetId)
+    this._apnTag.anq.push(() => this._apnTag.onEvent(event, targetId, callback))
     return this
   }
 
   defineTag ({member, targetId, invCode, sizes, keywords, native}) {
-    this._astWrapper.anq.push(() => this._astWrapper.defineTag({member, targetId, invCode, sizes, keywords, native}))
+    this._logger.debug('defineTag | member:', member, '| targetId:', targetId, '| invCode:', invCode, '| sizes:', sizes, '| keywords:', keywords, '| native:', native)
+    this._apnTag.anq.push(() => this._apnTag.defineTag({member, targetId, invCode, sizes, keywords, native}))
     return this
   }
 
   loadTags () {
-    this._astWrapper.anq.push(() => this._astWrapper.loadTags())
+    this._logger.debug('loadTags')
+    this._apnTag.anq.push(() => this._apnTag.loadTags())
     return this
   }
 
   showTag ({target}) {
-    this._astWrapper.anq.push(() => this._astWrapper.showTag(target))
-    return this
-  }
-
-  reset () {
-    this._astWrapper.anq.push(() => {
-      this._astWrapper.clearRequest()
-      this._registeredEvents.forEach((eventArray, targetId) => {
-        eventArray.forEach(event => this._astWrapper.offEvent(event, targetId))
-      })
-      this._registeredEvents = new Map()
-    })
+    this._logger.debug('showTag | target:', target)
+    this._apnTag.anq.push(() => this._apnTag.showTag(target))
     return this
   }
 
   refresh (target) {
-    this._astWrapper.anq.push(() => this._astWrapper.refresh(target))
+    this._logger.debug('refresh | target:', target)
+    this._apnTag.anq.push(() => this._apnTag.refresh(target))
     return this
   }
 
   modifyTag ({targetId, data}) {
-    this._astWrapper.anq.push(() => this._astWrapper.modifyTag(targetId, data))
+    this._logger.debug('modifyTag | targetId:', targetId, '| data:', data)
+    this._apnTag.anq.push(() => this._apnTag.modifyTag(targetId, data))
     return this
   }
 }

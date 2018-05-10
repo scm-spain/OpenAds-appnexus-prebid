@@ -1,3 +1,4 @@
+import LogLevel from 'loglevel'
 import AstClientImpl from './AstClientImpl'
 import AstWrapper from './AstWrapper'
 import PullingAdRepository from './repository/PullingAdRepository'
@@ -7,14 +8,15 @@ import {AD_AVAILABLE, AD_BAD_REQUEST, AD_ERROR, AD_NO_BID, AD_REQUEST_FAILURE} f
  * @class
  * @implements {AdLoadable}
  * @implements {AdViewable}
+ * @implements {Logger}
  */
 export default class AppNexusConnector {
-  constructor ({member}) {
-    this._astClient = new AstClientImpl({
-      member: member,
-      astWrapper: AstWrapper.build()
-    })
-    this._pullingAdRepository = new PullingAdRepository()
+  constructor ({member, logger, astClient, adRepository, loggerProvider}) {
+    this._member = member
+    this._logger = logger
+    this._astClient = astClient
+    this._adRepository = adRepository
+    this._loggerProvider = loggerProvider
   }
 
   display ({id}) {
@@ -27,7 +29,7 @@ export default class AppNexusConnector {
     return Promise.resolve()
       .then(() => this._astClient
         .defineTag({
-          member: this._astClient.member,
+          member: this._member,
           targetId: domElementId,
           invCode: placement,
           sizes: sizes,
@@ -37,34 +39,35 @@ export default class AppNexusConnector {
       .then(astClient => astClient.onEvent({
         event: AD_AVAILABLE,
         targetId: domElementId,
-        callback: consumer(this._pullingAdRepository)(domElementId)(AD_AVAILABLE)
+        callback: consumer(this._adRepository)(domElementId)(AD_AVAILABLE)
       }))
       .then(astClient => astClient.onEvent({
         event: AD_BAD_REQUEST,
         targetId: domElementId,
-        callback: consumer(this._pullingAdRepository)(domElementId)(AD_BAD_REQUEST)
+        callback: consumer(this._adRepository)(domElementId)(AD_BAD_REQUEST)
       }))
       .then(astClient => astClient.onEvent({
         event: AD_ERROR,
         targetId: domElementId,
-        callback: consumer(this._pullingAdRepository)(domElementId)(AD_ERROR)
+        callback: consumer(this._adRepository)(domElementId)(AD_ERROR)
       }))
       .then(astClient => astClient.onEvent({
         event: AD_NO_BID,
         targetId: domElementId,
-        callback: consumer(this._pullingAdRepository)(domElementId)(AD_NO_BID)
+        callback: consumer(this._adRepository)(domElementId)(AD_NO_BID)
       }))
       .then(astClient => astClient.onEvent({
         event: AD_REQUEST_FAILURE,
         targetId: domElementId,
-        callback: consumer(this._pullingAdRepository)(domElementId)(AD_REQUEST_FAILURE)
+        callback: consumer(this._adRepository)(domElementId)(AD_REQUEST_FAILURE)
       }))
       .then(astClient => astClient.loadTags())
-      .then(() => this._pullingAdRepository.find({id: domElementId}))
+      .then(() => this._adRepository.find({id: domElementId}))
   }
+
   refresh ({id, segmentation}) {
     return Promise.resolve()
-      .then(() => this._pullingAdRepository.remove({id}))
+      .then(() => this._adRepository.remove({id}))
       .then(() => {
         if (segmentation) {
           this._astClient.modifyTag({
@@ -78,8 +81,13 @@ export default class AppNexusConnector {
         }
       })
       .then(() => this._astClient.refresh([id]))
-      .then(() => this._pullingAdRepository.find({id}))
+      .then(() => this._adRepository.find({id}))
+  }
+
+  enableDebug ({debug}) {
+    this._astClient.debugMode({debug})
+    this._loggerProvider.debugMode({debug})
   }
 }
-const consumer = pullingAdRepository => id => status => data =>
-  pullingAdRepository.save({id, adResponse: {data, status}})
+const consumer = adRepository => id => status => data =>
+  adRepository.save({id, adResponse: {data, status}})

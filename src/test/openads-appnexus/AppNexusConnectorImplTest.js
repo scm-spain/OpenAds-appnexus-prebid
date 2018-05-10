@@ -22,7 +22,7 @@ describe('AstClient implementation', function () {
         member,
         astWrapper: astWrapperMock
       })
-      const mutatedAstClient = astClient.activateDebugMode()
+      const mutatedAstClient = astClient.debugMode({enabled: true})
 
       expect(astWrapperMock.debug).to.be.true
       expect(mutatedAstClient).to.be.an.instanceof(AstClientImpl)

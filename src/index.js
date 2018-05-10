@@ -1,3 +1,3 @@
-import AppNexusConnector from './openads-appnexus/AppNexusConnector'
+import AppNexusConnectorInitializer from './openads-appnexus/AppNexusConnectorInitializer'
 
-export default AppNexusConnector
+export default AppNexusConnectorInitializer

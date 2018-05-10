@@ -3,10 +3,10 @@
  */
 export default class AstClient {
   /**
-   * Activates the Debug mode.
+   * Activates or deactivates the Debug mode.
    */
-  activateDebugMode () {
-    throw new Error('AppNexusConnector#activateDebugMode must be implemented')
+  debugMode ({enabled}) {
+    throw new Error('AppNexusConnector#debugMode must be implemented')
   }
 
   /**
