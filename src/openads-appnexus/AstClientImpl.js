@@ -31,15 +31,15 @@ export default class AstClientImpl {
     return this
   }
 
-  showTag ({target}) {
-    this._logger.debug('showTag | target:', target)
-    this._apnTag.anq.push(() => this._apnTag.showTag(target))
+  showTag ({targetId}) {
+    this._logger.debug('showTag | targetId:', targetId)
+    this._apnTag.anq.push(() => this._apnTag.showTag(targetId))
     return this
   }
 
-  refresh (target) {
-    this._logger.debug('refresh | target:', target)
-    this._apnTag.anq.push(() => this._apnTag.refresh(target))
+  refresh (targetsArray) {
+    this._logger.debug('refresh | targetsArray:', targetsArray)
+    this._apnTag.anq.push(() => this._apnTag.refresh(targetsArray))
     return this
   }
 

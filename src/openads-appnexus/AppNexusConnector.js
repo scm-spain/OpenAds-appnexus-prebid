@@ -1,7 +1,3 @@
-import LogLevel from 'loglevel'
-import AstClientImpl from './AstClientImpl'
-import AstWrapper from './AstWrapper'
-import PullingAdRepository from './repository/PullingAdRepository'
 import {AD_AVAILABLE, AD_BAD_REQUEST, AD_ERROR, AD_NO_BID, AD_REQUEST_FAILURE} from './event/events'
 
 /**
@@ -19,9 +15,13 @@ export default class AppNexusConnector {
     this._loggerProvider = loggerProvider
   }
 
+  get member () {
+    return this._member
+  }
+
   display ({id}) {
     return Promise.resolve()
-      .then(() => this._astClient.showTag({target: id}))
+      .then(() => this._astClient.showTag({targetId: id}))
       .then(null)
   }
 
@@ -65,18 +65,18 @@ export default class AppNexusConnector {
       .then(() => this._adRepository.find({id: domElementId}))
   }
 
-  refresh ({id, segmentation}) {
+  refresh ({id, placement, sizes, segmentation}) {
     return Promise.resolve()
       .then(() => this._adRepository.remove({id}))
       .then(() => {
-        if (segmentation) {
+        let updateData = (placement || sizes || segmentation) && {}
+        if (updateData) {
+          if (placement) updateData.invCode = placement
+          if (sizes) updateData.sizes = sizes
+          if (segmentation) updateData.keywords = segmentation
           this._astClient.modifyTag({
             targetId: id,
-            data: {
-              invCode: segmentation.placement,
-              sizes: segmentation.sizes,
-              keywords: segmentation.keywords
-            }
+            data: updateData
           })
         }
       })

@@ -1,253 +1,296 @@
-
 import {expect} from 'chai'
 import sinon from 'sinon'
-import AstClientImpl from '../../openads-appnexus/AstClientImpl'
+import AppNexusConnector from '../../openads-appnexus/AppNexusConnector'
 
-describe('AstClient implementation', function () {
-  describe('given valid constructor parameters', function () {
-    it('should create a new instance of AstClientImpl according to parameters', function () {
-      const member = 3296
-      let astWrapperMock = {}
-
-      const astClient = new AstClientImpl({member, astWrapper: astWrapperMock})
-      expect(astClient.member).to.equal(3296)
-    })
-
-    it('should create a new instance of AstClientImpl and set debug mode to true', function () {
-      const member = 3296
-      let astWrapperMock = {
-        'debug': false
-      }
-      const astClient = new AstClientImpl({
-        member,
-        astWrapper: astWrapperMock
-      })
-      const mutatedAstClient = astClient.debugMode({enabled: true})
-
-      expect(astWrapperMock.debug).to.be.true
-      expect(mutatedAstClient).to.be.an.instanceof(AstClientImpl)
-    })
-
-    it('should create a new instance of AstClientImpl and push setPageOpts function to the queue', function () {
-      const member = 3296
-      let appNexusQueue = []
-      const qSpy = sinon.spy(appNexusQueue, 'push')
-      let astWrapperMock = {
-        anq: appNexusQueue,
-        setPageOpts: ({member, keywords}) => undefined
-      }
-      const astClient = new AstClientImpl({
-        member,
-        astWrapper: astWrapperMock
-      })
-      const mutatedAstClient = astClient.setPageOpts({
-        member: 3296,
-        keywords: 'forlayo&minglanillas'
+describe('AppNexus Connector', function () {
+  const createLoggerMock = () => ({
+    error: () => null,
+    debug: () => null
+  })
+  const createAstClientMock = () => {
+    const mock = {
+      onEvent: () => mock,
+      defineTag: () => mock,
+      loadTags: () => mock,
+      showTag: () => mock,
+      refresh: () => mock,
+      modifyTag: () => mock,
+      debugMode: () => mock
+    }
+    return mock
+  }
+  const createAdRepositoryMock = ({findResult = null} = {}) => ({
+    find: () => Promise.resolve().then(() => findResult),
+    remove: () => Promise.resolve()
+  })
+  const createloggerProviderMock = () => ({
+    debugMode: () => null
+  })
+  describe('enableDebug method', () => {
+    it('Should call the logger provider with the received value', () => {
+      const loggerProviderMock = createloggerProviderMock()
+      const debugModeSpy = sinon.spy(loggerProviderMock, 'debugMode')
+      const appNexusConnector = new AppNexusConnector({
+        member: 1000,
+        logger: createLoggerMock(),
+        astClient: createAstClientMock(),
+        adRepository: createAdRepositoryMock(),
+        loggerProvider: loggerProviderMock
       })
 
-      expect(astWrapperMock.anq).to.have.lengthOf(1)
-      expect(qSpy.called).to.be.true
-      expect(mutatedAstClient).to.be.an.instanceof(AstClientImpl)
-    })
+      appNexusConnector.enableDebug({debug: true})
 
-    it('should create a new instance of AstClientImpl and push onEvent function to the queue', function () {
-      const member = 3296
-      let appNexusQueue = []
-      const qSpy = sinon.spy(appNexusQueue, 'push')
-      let astWrapperMock = {
-        anq: appNexusQueue,
-        onEvent: ({event, targetId, callback}) => undefined
-      }
-      const astClient = new AstClientImpl({
-        member,
-        astWrapper: astWrapperMock
-      })
-      const mutatedAstClient = astClient.onEvent({
-        callback: () => undefined,
-        event: 'adAvailable',
-        targetId: 'forlayoDiv'
-      })
-
-      expect(astWrapperMock.anq).to.have.lengthOf(1)
-      expect(qSpy.called).to.be.true
-      expect(mutatedAstClient).to.be.an.instanceof(AstClientImpl)
-    })
-
-    it('should create a new instance of AstClientImpl and push defineTag function to the queue', function () {
-      const member = 3296
-      let appNexusQueue = []
-      const qSpy = sinon.spy(appNexusQueue, 'push')
-      let astWrapperMock = {
-        anq: appNexusQueue,
-        defineTag: ({invCode, sizes, targetId}) => undefined
-      }
-      const astClient = new AstClientImpl({
-        member,
-        astWrapper: astWrapperMock
-      })
-      const mutatedAstClient = astClient.defineTag({
-        targetId: 'forlayoDiv',
-        invCode: 'lalla',
-        sizes: [728, 90]
-      })
-
-      expect(astWrapperMock.anq).to.have.lengthOf(1)
-      expect(qSpy.called).to.be.true
-      expect(mutatedAstClient).to.be.an.instanceof(AstClientImpl)
-    })
-    it('should create a new instance of AstClientImpl and push loadTags function to the queue', function () {
-      const member = 3296
-      let appNexusQueue = []
-      const qSpy = sinon.spy(appNexusQueue, 'push')
-      let astWrapperMock = {
-        anq: appNexusQueue,
-        loadTags: () => undefined
-      }
-      const astClient = new AstClientImpl({
-        member,
-        astWrapper: astWrapperMock
-      })
-      const mutatedAstClient = astClient.loadTags()
-
-      expect(astWrapperMock.anq).to.have.lengthOf(1)
-      expect(qSpy.called).to.be.true
-      expect(mutatedAstClient).to.be.an.instanceof(AstClientImpl)
-    })
-    it('should create a new instance of AstClientImpl and push showTag function to the queue', function () {
-      const member = 3296
-      let appNexusQueue = []
-      const qSpy = sinon.spy(appNexusQueue, 'push')
-      let astWrapperMock = {
-        anq: appNexusQueue,
-        showTag: ({target}) => undefined
-      }
-      const astClient = new AstClientImpl({
-        member,
-        astWrapper: astWrapperMock
-      })
-      const mutatedAstClient = astClient.showTag({target: 'Odin'})
-
-      expect(astWrapperMock.anq).to.have.lengthOf(1)
-      expect(qSpy.called).to.be.true
-      expect(mutatedAstClient).to.be.an.instanceof(AstClientImpl)
+      expect(debugModeSpy.calledOnce, 'debug provider should be called').to.be.true
+      expect(debugModeSpy.args[0][0].debug, 'should receive the method debug value').to.be.true
     })
   })
-  describe('Given two events registered for two different targets', () => {
-    beforeEach('Define the events', () => {
-      this.givenEvent11 = {event: 'event1', targetId: 'target1', callback: () => null}
-      this.givenEvent12 = {event: 'event1', targetId: 'target2', callback: () => null}
-      this.givenEvent21 = {event: 'event2', targetId: 'target1', callback: () => null}
-      this.givenEvent22 = {event: 'event2', targetId: 'target2', callback: () => null}
-      this.loggerMock = {
-        debug: (title, log) => null
-      }
-    })
-    describe('Registering the events', () => {
-      it('Should register the events to the appnexus client', () => {
-        const appNexusQueue = {
-          push: (f) => f()
-        }
-        const astWrapperMock = {
-          anq: appNexusQueue,
-          clearRequest: () => null,
-          offEvent: () => null,
-          onEvent: () => null
-        }
-        const onEventSpy = sinon.spy(astWrapperMock, 'onEvent')
-
-        const astClient = new AstClientImpl({
-          astWrapper: astWrapperMock,
-          connectorData: {}
-        })
-        astClient
-          .onEvent(this.givenEvent11)
-          .onEvent(this.givenEvent12)
-          .onEvent(this.givenEvent21)
-          .onEvent(this.givenEvent22)
-
-        expect(onEventSpy.callCount).to.equal(4)
+  describe('display method', () => {
+    it('Should return a promise', () => {
+      const appNexusConnector = new AppNexusConnector({
+        member: 1000,
+        logger: createLoggerMock(),
+        astClient: createAstClientMock(),
+        adRepository: createAdRepositoryMock(),
+        loggerProvider: createloggerProviderMock()
       })
+      expect(appNexusConnector.display({})).to.be.a('promise')
     })
-    describe('Calling the reset method', () => {
-      it('Should clear the requests and the registered events', () => {
-        const appNexusQueue = {
-          push: (f) => f()
-        }
-        const astWrapperMock = {
-          anq: appNexusQueue,
-          clearRequest: () => null,
-          offEvent: () => null,
-          onEvent: () => null
-        }
-        const offEventSpy = sinon.spy(astWrapperMock, 'offEvent')
-
-        const astClient = new AstClientImpl({
-          astWrapper: astWrapperMock,
-          member: 0
-        })
-        astClient
-          .onEvent(this.givenEvent11)
-          .onEvent(this.givenEvent12)
-          .onEvent(this.givenEvent21)
-          .onEvent(this.givenEvent22)
-          .reset()
-
-        expect(offEventSpy.callCount).to.equal(4)
+    it('Should show the received target id', (done) => {
+      const astClientMock = createAstClientMock()
+      const showSpy = sinon.spy(astClientMock, 'showTag')
+      const appNexusConnector = new AppNexusConnector({
+        member: 1000,
+        logger: createLoggerMock(),
+        astClient: astClientMock,
+        adRepository: createAdRepositoryMock(),
+        loggerProvider: createloggerProviderMock()
       })
+      const givenId = 1
+
+      appNexusConnector.display({id: givenId})
+        .then(() => {
+          expect(showSpy.calledOnce, 'should have called the show method').to.be.true
+          expect(showSpy.args[0][0].targetId, 'should receive correct id').to.equal(givenId)
+          done()
+        })
+        .catch(e => done(e))
     })
   })
-  describe('Given an AppNexusConnector with an AppNexusClient', () => {
-    it('Should call client methods', () => {
-      const member = 0
-      const appNexusQueue = {
-        push: (f) => f()
-      }
-      const astWrapperMock = {
-        anq: appNexusQueue,
-        setPageOpts: () => null,
-        defineTag: () => null,
-        loadTags: () => null,
-        showTag: () => null,
-        refresh: () => null,
-        modifyTag: () => null
-      }
-      const setPageOptsSpy = sinon.spy(astWrapperMock, 'setPageOpts')
-      const defineTagSpy = sinon.spy(astWrapperMock, 'defineTag')
-      const loadTagsSpy = sinon.spy(astWrapperMock, 'loadTags')
-      const showTagSpy = sinon.spy(astWrapperMock, 'showTag')
-      const modifyTagSpy = sinon.spy(astWrapperMock, 'modifyTag')
-      const refreshSpy = sinon.spy(astWrapperMock, 'refresh')
-
-      const astClient = new AstClientImpl({
-        member,
-        astWrapper: astWrapperMock
+  describe('loadAd method', () => {
+    it('Should return a promise', () => {
+      const appNexusConnector = new AppNexusConnector({
+        member: 1000,
+        logger: createLoggerMock(),
+        astClient: createAstClientMock(),
+        adRepository: createAdRepositoryMock(),
+        loggerProvider: createloggerProviderMock()
       })
+      expect(appNexusConnector.loadAd({})).to.be.a('promise')
+    })
+    it('Should define a tag, register callback events, load the tag and resolve with an Ad response if it is found in repository', (done) => {
+      const astClientMock = createAstClientMock()
+      const adRepositoryMock = createAdRepositoryMock({
+        findResult: 'whatever'
+      })
+      const defineTagSpy = sinon.spy(astClientMock, 'defineTag')
+      const onEventSpy = sinon.spy(astClientMock, 'onEvent')
+      const loadTagsSpy = sinon.spy(astClientMock, 'loadTags')
+      const findSpy = sinon.spy(adRepositoryMock, 'find')
+      const appNexusConnector = new AppNexusConnector({
+        member: 1000,
+        logger: createLoggerMock(),
+        astClient: astClientMock,
+        adRepository: adRepositoryMock,
+        loggerProvider: createloggerProviderMock()
+      })
+      const givenParameters = {
+        domElementId: 1,
+        placement: 2,
+        sizes: [[3, 4]],
+        segmentation: {a: 5},
+        native: {b: 6}
+      }
 
-      const givenPageOpts = {member: 1111, keywords: {p1: 'pv1'}}
-      const givenDefineTag = {member: 2222, targetId: 'Ad1', invCode: 'inv1', sizes: [[1, 1]], keywords: {p2: 'pv2'}, native: {}}
-      const givenShowTag = {target: 'Ad1'}
-      const givenModifyTag = {targetId: 'Ad1', data: {member: 2223, invCode: 'inv2', sizes: [[1, 1]], keywords: {p3: 'pv3'}, native: {}}}
-      const givenRefresh = ['Ad1', 'Ad2']
-      astClient
-        .setPageOpts(givenPageOpts)
-        .defineTag(givenDefineTag)
-        .loadTags()
-        .showTag(givenShowTag)
-        .modifyTag(givenModifyTag)
-        .refresh(givenRefresh)
+      appNexusConnector.loadAd(givenParameters)
+        .then(() => {
+          const expectedDefineTagParameters = {
+            member: appNexusConnector.member,
+            targetId: 1,
+            invCode: 2,
+            sizes: [[3, 4]],
+            keywords: {a: 5},
+            native: {b: 6}
+          }
+          expect(defineTagSpy.calledOnce, 'should have defined the tag').to.be.true
+          expect(defineTagSpy.args[0][0], 'should have defined the tag with valid parameters').to.deep.equal(expectedDefineTagParameters)
+          expect(onEventSpy.callCount, 'should have registered 5 events').to.equal(5)
+          expect(loadTagsSpy.calledOnce, 'should have loaded the tag').to.be.true
+          expect(findSpy.calledOnce, 'should have found the Ad in the repository').to.be.true
+          expect(findSpy.args[0][0], 'should have found the Ad in the repository with valid parameters').to.deep.equal({id: givenParameters.domElementId})
+          done()
+        })
+        .catch(e => done(e))
+    })
+    it('Should reject if the Ad repository rejects while waiting for a response', (done) => {
+      const adRepositoryMock = createAdRepositoryMock({
+        findResult: Promise.reject(new Error('whatever'))
+      })
+      const findSpy = sinon.spy(adRepositoryMock, 'find')
+      const appNexusConnector = new AppNexusConnector({
+        member: 1000,
+        logger: createLoggerMock(),
+        astClient: createAstClientMock(),
+        adRepository: adRepositoryMock,
+        loggerProvider: createloggerProviderMock()
+      })
+      const givenParameters = {
+        domElementId: 1,
+        placement: 2,
+        sizes: [[3, 4]],
+        segmentation: {a: 5},
+        native: {b: 6}
+      }
+      appNexusConnector.loadAd(givenParameters)
+        .then(() => {
+          done(new Error('should have rejected'))
+        })
+        .catch(() => {
+          expect(findSpy.calledOnce, 'should have found the Ad in the repository').to.be.true
+          expect(findSpy.args[0][0], 'should have found the Ad in the repository with valid parameters').to.deep.equal({id: givenParameters.domElementId})
+          done()
+        })
+        .catch(e => done(e))
+    })
+  })
+  describe('refresh method', () => {
+    it('Should return a promise', () => {
+      const appNexusConnector = new AppNexusConnector({
+        member: 1000,
+        logger: createLoggerMock(),
+        astClient: createAstClientMock(),
+        adRepository: createAdRepositoryMock(),
+        loggerProvider: createloggerProviderMock()
+      })
+      expect(appNexusConnector.refresh({})).to.be.a('promise')
+    })
+    it('Should remove the Ad from the repository, modify the tag, refresh the tag and wait for the Ad response if any update data is received', (done) => {
+      const astClientMock = createAstClientMock()
+      const adRepositoryMock = createAdRepositoryMock({
+        findResult: 'whatever'
+      })
+      const removeSpy = sinon.spy(adRepositoryMock, 'remove')
+      const findSpy = sinon.spy(adRepositoryMock, 'find')
+      const modifyTagSpy = sinon.spy(astClientMock, 'modifyTag')
+      const refreshSpy = sinon.spy(astClientMock, 'refresh')
+      const appNexusConnector = new AppNexusConnector({
+        member: 1000,
+        logger: createLoggerMock(),
+        astClient: astClientMock,
+        adRepository: adRepositoryMock,
+        loggerProvider: createloggerProviderMock()
+      })
+      const givenParameters = {
+        id: 1,
+        placement: 2,
+        sizes: [[3, 4]],
+        segmentation: {a: 5}
+      }
 
-      expect(setPageOptsSpy.called).to.be.true
-      expect(defineTagSpy.called).to.be.true
-      expect(loadTagsSpy.called).to.be.true
-      expect(showTagSpy.called).to.be.true
-      expect(modifyTagSpy.called).to.be.true
-      expect(refreshSpy.called).to.be.true
-      expect(setPageOptsSpy.lastCall.args[0]).to.deep.equal(givenPageOpts)
-      expect(defineTagSpy.lastCall.args[0]).to.deep.equal(givenDefineTag)
-      expect(showTagSpy.lastCall.args[0]).to.deep.equal(givenShowTag.target)
-      expect(modifyTagSpy.lastCall.args[0]).to.deep.equal(givenModifyTag.targetId)
-      expect(modifyTagSpy.lastCall.args[1]).to.deep.equal(givenModifyTag.data)
-      expect(refreshSpy.lastCall.args[0]).to.deep.equal(givenRefresh)
+      appNexusConnector.refresh(givenParameters)
+        .then(() => {
+          const modifyTagExpectedParameters = {
+            targetId: givenParameters.id,
+            data: {
+              invCode: givenParameters.placement,
+              sizes: givenParameters.sizes,
+              keywords: givenParameters.segmentation
+            }
+          }
+          expect(removeSpy.calledOnce, 'should have removed the Ad from the repository').to.be.true
+          expect(removeSpy.args[0][0], 'should have removed the Ad from the repository with valid parameters').to.deep.equal({id: givenParameters.id})
+          expect(modifyTagSpy.calledOnce, 'should have modified the tag').to.be.true
+          expect(modifyTagSpy.args[0][0], 'should have modified the tag with valid parameters').to.deep.equal(modifyTagExpectedParameters)
+          expect(refreshSpy.calledOnce, 'should have refreshed the tag').to.be.true
+          expect(refreshSpy.args[0][0], 'should have refreshed the tag with valid parameters').to.deep.equal([givenParameters.id])
+          expect(findSpy.calledOnce, 'should have found the Ad in the repository').to.be.true
+          expect(findSpy.args[0][0], 'should have found the Ad in the repository with valid parameters').to.deep.equal({id: givenParameters.id})
+          done()
+        })
+        .catch(e => done(e))
+    })
+    it('Should modify the tag only with the data received to modify, if some is received', (done) => {
+      const astClientMock = createAstClientMock()
+      const modifyTagSpy = sinon.spy(astClientMock, 'modifyTag')
+      const appNexusConnector = new AppNexusConnector({
+        member: 1000,
+        logger: createLoggerMock(),
+        astClient: astClientMock,
+        adRepository: createAdRepositoryMock(),
+        loggerProvider: createloggerProviderMock()
+      })
+      const givenParameters = {
+        id: 1,
+        sizes: [[3, 4]],
+      }
+
+      appNexusConnector.refresh(givenParameters)
+        .then(() => {
+          const modifyTagExpectedParameters = {
+            targetId: givenParameters.id,
+            data: {
+              sizes: givenParameters.sizes
+            }
+          }
+          expect(modifyTagSpy.calledOnce, 'should have modified the tag').to.be.true
+          expect(modifyTagSpy.args[0][0], 'should have modified the tag with valid parameters').to.deep.equal(modifyTagExpectedParameters)
+          done()
+        })
+        .catch(e => done(e))
+    })
+    it('Should not call to modify the tag if no data to modify is received', (done) => {
+      const astClientMock = createAstClientMock()
+      const modifyTagSpy = sinon.spy(astClientMock, 'modifyTag')
+      const appNexusConnector = new AppNexusConnector({
+        member: 1000,
+        logger: createLoggerMock(),
+        astClient: astClientMock,
+        adRepository: createAdRepositoryMock(),
+        loggerProvider: createloggerProviderMock()
+      })
+      const givenParameters = {
+        id: 1
+      }
+
+      appNexusConnector.refresh(givenParameters)
+        .then(() => {
+          expect(modifyTagSpy.called, 'should not have modified the tag').to.be.false
+          done()
+        })
+        .catch(e => done(e))
+    })
+    it('Should reject if ad repository rejects returning the ad response', (done) => {
+      const adRepositoryMock = createAdRepositoryMock({
+        findResult: Promise.reject(new Error('rejected find result'))
+      })
+      const appNexusConnector = new AppNexusConnector({
+        member: 1000,
+        logger: createLoggerMock(),
+        astClient: createAstClientMock(),
+        adRepository: adRepositoryMock,
+        loggerProvider: createloggerProviderMock()
+      })
+      const givenParameters = {
+        id: 1
+      }
+      appNexusConnector.refresh(givenParameters)
+        .then(() => {
+          done(new Error('should have been rejected'))
+        })
+        .catch(e => {
+          expect(e.message).to.equal('rejected find result')
+          done()
+        })
+        .catch(e => done(e))
     })
   })
 })
