@@ -22,10 +22,10 @@ export default class PullingDataEntry {
 
   _createIntervalPromise ({id}) {
     return new Promise(resolve => {
-      this._interval = setInterval(() => {
+      this._intervalID = setInterval(() => {
         if (this._adRepository.has({id})) {
-          clearTimeout(this._timeout)
-          clearInterval(this._interval)
+          clearTimeout(this._timeoutID)
+          clearInterval(this._intervalID)
           resolve(this._adRepository.getValue({id}))
         }
       }, this._wait)
@@ -34,9 +34,9 @@ export default class PullingDataEntry {
 
   _createTimeoutPromise () {
     return new Promise((resolve, reject) => {
-      this._timeout = setTimeout(() => {
-        clearInterval(this._interval)
-        clearTimeout(this._timeout)
+      this._timeoutID = setTimeout(() => {
+        clearInterval(this._intervalID)
+        clearTimeout(this._timeoutID)
         reject(new Error(TIMEOUT_EXCEPTION))
       }, this._timeout)
     })
