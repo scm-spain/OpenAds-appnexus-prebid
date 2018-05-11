@@ -193,7 +193,8 @@ describe('AppNexus Connector', function () {
         id: 1,
         placement: 2,
         sizes: [[3, 4]],
-        segmentation: {a: 5}
+        segmentation: {a: 5},
+        native: {b: 6}
       }
 
       appNexusConnector.refresh(givenParameters)
@@ -203,7 +204,8 @@ describe('AppNexus Connector', function () {
             data: {
               invCode: givenParameters.placement,
               sizes: givenParameters.sizes,
-              keywords: givenParameters.segmentation
+              keywords: givenParameters.segmentation,
+              native: givenParameters.native
             }
           }
           expect(removeSpy.calledOnce, 'should have removed the Ad from the repository').to.be.true

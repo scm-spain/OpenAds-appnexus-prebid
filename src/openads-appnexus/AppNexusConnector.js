@@ -65,15 +65,16 @@ export default class AppNexusConnector {
       .then(() => this._adRepository.find({id: domElementId}))
   }
 
-  refresh ({id, placement, sizes, segmentation}) {
+  refresh ({id, placement, sizes, segmentation, native}) {
     return Promise.resolve()
       .then(() => this._adRepository.remove({id}))
       .then(() => {
-        let updateData = (placement || sizes || segmentation) && {}
+        let updateData = (placement || sizes || segmentation || native) && {}
         if (updateData) {
           if (placement) updateData.invCode = placement
           if (sizes) updateData.sizes = sizes
           if (segmentation) updateData.keywords = segmentation
+          if (native) updateData.native = native
           this._astClient.modifyTag({
             targetId: id,
             data: updateData
