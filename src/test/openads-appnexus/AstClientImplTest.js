@@ -77,51 +77,8 @@ describe('AstClient implementation', function () {
       const anqSpy = sinon.spy(apnTagMock.anq, 'push')
       const astClient = new AstClientImpl({apnTag: apnTagMock, logger: loggerMock})
       astClient.loadTags()
-      setTimeout(() => {
-        expect(anqSpy.calledOnce, 'anq shoud have been called').to.be.true
-        expect(loadTagsSpy.calledOnce, 'loadTags shoud have been called').to.be.true
-      }, 200)
-    })
-    it('should call the apntag loadTags method via anq once after several consecutive calls of loadTags AstClient', function () {
-      const loggerMock = createLoggerMock()
-      const apnTagMock = createApnTagMock()
-      const loadTagsSpy = sinon.spy(apnTagMock, 'loadTags')
-      const anqSpy = sinon.spy(apnTagMock.anq, 'push')
-      const astClient = new AstClientImpl({apnTag: apnTagMock, logger: loggerMock})
-      astClient.loadTags()
-        .loadTags()
-        .loadTags()
-        .loadTags()
-        .loadTags()
-        .loadTags()
-        .loadTags()
-        .loadTags()
-      setTimeout(() => {
-        expect(anqSpy.calledOnce, 'anq shoud have been called').to.be.true
-        expect(loadTagsSpy.calledOnce, 'loadTags shoud have been called').to.be.true
-      }, 200)
-    })
-    it('should call the apntag loadTags method via anq twice after several consecutive calls of loadTags AstClient', function () {
-      const loggerMock = createLoggerMock()
-      const apnTagMock = createApnTagMock()
-      const loadTagsSpy = sinon.spy(apnTagMock, 'loadTags')
-      const anqSpy = sinon.spy(apnTagMock.anq, 'push')
-      const astClient = new AstClientImpl({apnTag: apnTagMock, logger: loggerMock})
-      astClient.loadTags()
-        .loadTags()
-        .loadTags()
-        .loadTags()
-        .loadTags()
-        .loadTags()
-        .loadTags()
-        .loadTags()
-      setTimeout(() => {
-        astClient.loadTags()
-      }, 20)
-      setTimeout(() => {
-        expect(anqSpy.calledTwice, 'anq shoud have been called').to.be.true
-        expect(loadTagsSpy.calledTwice, 'loadTags shoud have been called').to.be.true
-      }, 200)
+      expect(anqSpy.calledOnce, 'anq shoud have been called').to.be.true
+      expect(loadTagsSpy.calledOnce, 'loadTags shoud have been called').to.be.true
     })
   })
   describe('showTag method', function () {
@@ -150,65 +107,9 @@ describe('AstClient implementation', function () {
 
       const givenParameters = ['target1', 'target2']
       astClient.refresh(givenParameters)
-      setTimeout(() => {
-        expect(anqSpy.calledOnce, 'anq shoud have been called').to.be.true
-        expect(refreshSpy.calledOnce, 'refresh shoud have been called').to.be.true
-        expect(refreshSpy.args[0][0], 'apntag refresh should receive the parameters in order').to.deep.equal(givenParameters)
-      }, 200)
-    })
-
-    it('should call the apntag refresh method via anq once after several consecutive calls of refresh AstClient', function () {
-      const loggerMock = createLoggerMock()
-      const apnTagMock = createApnTagMock()
-      const refreshSpy = sinon.spy(apnTagMock, 'refresh')
-      const anqSpy = sinon.spy(apnTagMock.anq, 'push')
-      const astClient = new AstClientImpl({apnTag: apnTagMock, logger: loggerMock})
-
-      const givenParameters = ['target1', 'target2', 'target3', 'target4', 'target5', 'target6', 'target7', 'target8']
-
-      astClient.refresh(['target1'])
-        .refresh(['target2', 'target3'])
-        .refresh(['target4'])
-        .refresh(['target5'])
-        .refresh(['target6'])
-        .refresh(['target7'])
-        .refresh(['target8'])
-
-      setTimeout(() => {
-        expect(anqSpy.calledOnce, 'anq shoud have been called').to.be.true
-        expect(refreshSpy.calledOnce, 'refresh shoud have been called').to.be.true
-        expect(refreshSpy.args[0][0], 'apntag refresh should receive the parameters in order').to.deep.equal(givenParameters)
-      }, 200)
-    })
-
-    it('should call the apntag refresh method via anq twice after several consecutive calls of refresh AstClient', function () {
-      const loggerMock = createLoggerMock()
-      const apnTagMock = createApnTagMock()
-      const refreshSpy = sinon.spy(apnTagMock, 'refresh')
-      const anqSpy = sinon.spy(apnTagMock.anq, 'push')
-      const astClient = new AstClientImpl({apnTag: apnTagMock, logger: loggerMock})
-
-      const givenParametersFirstCall = ['target1', 'target2', 'target3', 'target4', 'target5', 'target6', 'target7', 'target8']
-      const givenParametersSecondCall = ['target9']
-
-      astClient.refresh(['target1'])
-        .refresh(['target2', 'target3'])
-        .refresh(['target4'])
-        .refresh(['target5'])
-        .refresh(['target6'])
-        .refresh(['target7'])
-        .refresh(['target8'])
-
-      setTimeout(() => {
-        astClient.refresh(['target9'])
-      }, 20)
-
-      setTimeout(() => {
-        expect(anqSpy.calledOnce, 'anq shoud have been called').to.be.true
-        expect(refreshSpy.calledOnce, 'refresh shoud have been called').to.be.true
-        expect(refreshSpy.args[0][0], 'apntag refresh should receive the parameters in order').to.deep.equal(givenParametersFirstCall)
-        expect(refreshSpy.args[1][0], 'apntag refresh should receive the parameters in order').to.deep.equal(givenParametersSecondCall)
-      }, 200)
+      expect(anqSpy.calledOnce, 'anq shoud have been called').to.be.true
+      expect(refreshSpy.calledOnce, 'refresh shoud have been called').to.be.true
+      expect(refreshSpy.args[0][0], 'apntag refresh should receive the parameters in order').to.deep.equal(givenParameters)
     })
   })
 })
