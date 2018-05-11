@@ -26,7 +26,7 @@ describe('AppNexus Connector', function () {
   const createloggerProviderMock = () => ({
     debugMode: () => null
   })
-  describe('enableDebug method', () => {
+  describe('enable Debug method', () => {
     it('Should call the logger provider with the received value', () => {
       const loggerProviderMock = createloggerProviderMock()
       const debugModeSpy = sinon.spy(loggerProviderMock, 'debugMode')
