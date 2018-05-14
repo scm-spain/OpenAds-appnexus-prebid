@@ -3,19 +3,10 @@
  */
 export default class AstClient {
   /**
-   * Activates the Debug mode.
+   * Activates or deactivates the Debug mode.
    */
-  activateDebugMode () {
-    throw new Error('AppNexusConnector#activateDebugMode must be implemented')
-  }
-
-  /**
-   * Sets page options.
-   * @param member
-   * @param keywords
-   */
-  setPageOpts ({member, keywords}) {
-    throw new Error('AppNexusConnector#setPageOpts must be implemented')
+  debugMode ({enabled}) {
+    throw new Error('AppNexusConnector#debugMode must be implemented')
   }
 
   /**
@@ -50,24 +41,17 @@ export default class AstClient {
 
   /**
    * Shows tags in the target.
-   * @param target
+   * @param targetId
    */
-  showTag ({target}) {
+  showTag ({targetId}) {
     throw new Error('AppNexusConnector#showTag must be implemented')
   }
 
   /**
-   * Resets the state to it's pre uninitialized state.
-   */
-  reset () {
-    throw new Error('AppNexusConnector#clearRequest must be implemented')
-  }
-
-  /**
    * Refreshes ads on the page.
-   * @param target : an array of ids
+   * @param targetsArray : an array of ids
    */
-  refresh (target) {
+  refresh (targetsArray) {
     throw new Error('AppNexusConnector#refresh must be implemented')
   }
 

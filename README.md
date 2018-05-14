@@ -1,7 +1,7 @@
 # OpenAds-appnexus
 [![Build Status](https://travis-ci.org/scm-spain/OpenAds-appnexus.svg?branch=master)](https://travis-ci.org/scm-spain/OpenAds-appnexus)
 
-OpenAds AppNexus seller tag module for handle ads.
+[OpenAds](https://github.com/scm-spain/OpenAds) AppNexus seller tag module for handle ads.
 
 OpenAds now support sources as modules by configuration so you can include whatever module available you want.
 To build your own module take a look at the section ```Build your own module```
@@ -24,18 +24,27 @@ Now you are able to put the instance as a source available in OpenAds configurat
 import OpenAds from '@schibstedspain/openads'
 import AppNexusConnector from '@schibstedspain/openads-appnexus'
 
-const appNexusConnector = new AppNexusConnector({
-  configuration: {
+const appNexusConnector = AppNexusConnector.init({
+  config: {
     member: 4242
   }
 })
 
 const openAds = OpenAds.init({config:{
-  Sources: [appNexusConnector]
+  Sources: {
+    AppNexus: appNexusConnector
+  }
 }})
 ```
 
+This connector implements these [Connector API](https://github.com/scm-spain/OpenAds-ConnectorAPI) interfaces:
+* AdViewable
+* AdLoadable
+* Logger
 
 # Build your own module
 All modules to work fine with OpenAds must **implement** at least one interface of type AdLoadable or AdViewable
 The idea is that your module implements only the interfaces that support, for example AppNexus supports both
+
+# License
+OpenAds is [MIT licensed](./LICENSE).
