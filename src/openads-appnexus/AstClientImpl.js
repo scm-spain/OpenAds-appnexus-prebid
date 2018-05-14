@@ -21,19 +21,19 @@ export default class AstClientImpl {
   }
 
   onEvent ({event, targetId, callback}) {
-    this._logger.debug('onEvent | event:', event, '| targetId:', targetId)
+    this._logger.debug(this._logger.name, '| onEvent | event:', event, '| targetId:', targetId)
     this._apnTag.anq.push(() => this._apnTag.onEvent(event, targetId, callback))
     return this
   }
 
   defineTag ({member, targetId, invCode, sizes, keywords, native}) {
-    this._logger.debug('defineTag | member:', member, '| targetId:', targetId, '| invCode:', invCode, '| sizes:', sizes, '| keywords:', keywords, '| native:', native)
+    this._logger.debug(this._logger.name, '| defineTag | member:', member, '| targetId:', targetId, '| invCode:', invCode, '| sizes:', sizes, '| keywords:', keywords, '| native:', native)
     this._apnTag.anq.push(() => this._apnTag.defineTag({member, targetId, invCode, sizes, keywords, native}))
     return this
   }
 
   loadTags () {
-    this._logger.debug('loadTags has been requested')
+    this._logger.debug(this._logger.name, '| loadTags has been requested')
     if (this._debounceTimerID !== null) clearTimeout(this._debounceTimerID)
     this._loadTagsDebounceOperator()
     return this
@@ -41,20 +41,20 @@ export default class AstClientImpl {
 
   _loadTagsDebounceOperator () {
     this._debounceTimerID = setTimeout(() => {
-      this._logger.debug('loadTags has been called')
+      this._logger.debug(this._logger.name, '| loadTags has been called')
       this._apnTag.anq.push(() => this._apnTag.loadTags())
       this._debounceTimerID = null
     }, this._debounceTimeOutDelay)
   }
 
   showTag ({targetId}) {
-    this._logger.debug('showTag | targetId:', targetId)
+    this._logger.debug(this._logger.name, '| showTag | targetId:', targetId)
     this._apnTag.anq.push(() => this._apnTag.showTag(targetId))
     return this
   }
 
   refresh (targetsArray) {
-    this._logger.debug('refresh | targetsArray:', targetsArray)
+    this._logger.debug(this._logger.name, '| refresh | targetsArray:', targetsArray)
     if (this._bufferTimerID !== null) clearTimeout(this._bufferTimerID)
     this._bufferAccumulator = this._bufferAccumulator.concat(targetsArray)
     this._refreshBufferOperator()
@@ -63,7 +63,7 @@ export default class AstClientImpl {
 
   _refreshBufferOperator () {
     this._bufferTimerID = setTimeout(() => {
-      this._logger.debug('Refresh has been called')
+      this._logger.debug(this._logger.name, '| refresh has been called')
       this._apnTag.anq.push(() => this._apnTag.refresh(this._bufferAccumulator))
       this._bufferTimerID = null
       this._bufferAccumulator = []
@@ -71,7 +71,7 @@ export default class AstClientImpl {
   }
 
   modifyTag ({targetId, data}) {
-    this._logger.debug('modifyTag | targetId:', targetId, '| data:', data)
+    this._logger.debug(this._logger.name, '| modifyTag | targetId:', targetId, '| data:', data)
     this._apnTag.anq.push(() => this._apnTag.modifyTag(targetId, data))
     return this
   }
