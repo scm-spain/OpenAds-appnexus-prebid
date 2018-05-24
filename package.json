@@ -53,7 +53,7 @@
     ]
   },
   "dependencies": {
-    "@schibstedspain/ast": "^0.14.0",
+    "@schibstedspain/ast": "^0.16.0",
     "@schibstedspain/openads-connector-api": "^1.2.0",
     "loglevel": "^1.6.1"
   }
