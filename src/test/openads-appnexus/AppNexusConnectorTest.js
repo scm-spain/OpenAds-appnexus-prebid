@@ -67,7 +67,7 @@ describe('AppNexus Connector', function () {
       })
       const givenId = 1
 
-      appNexusConnector.display({id: givenId})
+      appNexusConnector.display({domElementId: givenId})
         .then(() => {
           expect(showSpy.calledOnce, 'should have called the show method').to.be.true
           expect(showSpy.args[0][0].targetId, 'should receive correct id').to.equal(givenId)
@@ -190,7 +190,7 @@ describe('AppNexus Connector', function () {
         loggerProvider: createloggerProviderMock()
       })
       const givenParameters = {
-        id: 1,
+        domElementId: 1,
         placement: 2,
         sizes: [[3, 4]],
         segmentation: {a: 5},
@@ -200,7 +200,7 @@ describe('AppNexus Connector', function () {
       appNexusConnector.refresh(givenParameters)
         .then(() => {
           const modifyTagExpectedParameters = {
-            targetId: givenParameters.id,
+            targetId: givenParameters.domElementId,
             data: {
               invCode: givenParameters.placement,
               sizes: givenParameters.sizes,
@@ -209,13 +209,13 @@ describe('AppNexus Connector', function () {
             }
           }
           expect(removeSpy.calledOnce, 'should have removed the Ad from the repository').to.be.true
-          expect(removeSpy.args[0][0], 'should have removed the Ad from the repository with valid parameters').to.deep.equal({id: givenParameters.id})
+          expect(removeSpy.args[0][0], 'should have removed the Ad from the repository with valid parameters').to.deep.equal({id: givenParameters.domElementId})
           expect(modifyTagSpy.calledOnce, 'should have modified the tag').to.be.true
           expect(modifyTagSpy.args[0][0], 'should have modified the tag with valid parameters').to.deep.equal(modifyTagExpectedParameters)
           expect(refreshSpy.calledOnce, 'should have refreshed the tag').to.be.true
-          expect(refreshSpy.args[0][0], 'should have refreshed the tag with valid parameters').to.deep.equal([givenParameters.id])
+          expect(refreshSpy.args[0][0], 'should have refreshed the tag with valid parameters').to.deep.equal([givenParameters.domElementId])
           expect(findSpy.calledOnce, 'should have found the Ad in the repository').to.be.true
-          expect(findSpy.args[0][0], 'should have found the Ad in the repository with valid parameters').to.deep.equal({id: givenParameters.id})
+          expect(findSpy.args[0][0], 'should have found the Ad in the repository with valid parameters').to.deep.equal({id: givenParameters.domElementId})
           done()
         })
         .catch(e => done(e))
@@ -231,14 +231,14 @@ describe('AppNexus Connector', function () {
         loggerProvider: createloggerProviderMock()
       })
       const givenParameters = {
-        id: 1,
+        domElementId: 1,
         sizes: [[3, 4]],
       }
 
       appNexusConnector.refresh(givenParameters)
         .then(() => {
           const modifyTagExpectedParameters = {
-            targetId: givenParameters.id,
+            targetId: givenParameters.domElementId,
             data: {
               sizes: givenParameters.sizes
             }

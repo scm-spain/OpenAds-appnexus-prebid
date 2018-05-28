@@ -19,9 +19,9 @@ export default class AppNexusConnector {
     return this._member
   }
 
-  display ({id}) {
+  display ({domElementId}) {
     return Promise.resolve()
-      .then(() => this._astClient.showTag({targetId: id}))
+      .then(() => this._astClient.showTag({targetId: domElementId}))
       .then(null)
   }
 
@@ -65,9 +65,9 @@ export default class AppNexusConnector {
       .then(() => this._adRepository.find({id: domElementId}))
   }
 
-  refresh ({id, placement, sizes, segmentation, native}) {
+  refresh ({domElementId, placement, sizes, segmentation, native}) {
     return Promise.resolve()
-      .then(() => this._adRepository.remove({id}))
+      .then(() => this._adRepository.remove({id: domElementId}))
       .then(() => {
         let updateData = (placement || sizes || segmentation || native) && {}
         if (updateData) {
@@ -76,13 +76,13 @@ export default class AppNexusConnector {
           if (segmentation) updateData.keywords = segmentation
           if (native) updateData.native = native
           this._astClient.modifyTag({
-            targetId: id,
+            targetId: domElementId,
             data: updateData
           })
         }
       })
-      .then(() => this._astClient.refresh([id]))
-      .then(() => this._adRepository.find({id}))
+      .then(() => this._astClient.refresh([domElementId]))
+      .then(() => this._adRepository.find({id: domElementId}))
   }
 
   enableDebug ({debug}) {
