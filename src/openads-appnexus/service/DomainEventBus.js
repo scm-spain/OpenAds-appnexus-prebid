@@ -47,7 +47,7 @@ class DomainEventBus {
   }
 
   _replayPendingEvent ({eventName}) {
-    if (this._pendingEvents.has(eventName)) {
+    if (this.hasPendingEvent({eventName})) {
       const domainEvent = this._pendingEvents.get(eventName)
       this._pendingEvents.delete(eventName)
       this.raise({domainEvent})
@@ -62,9 +62,18 @@ class DomainEventBus {
     return (this._observers.has(eventName)) ? this._observers.get(eventName).length : 0
   }
 
-  clear () {
-    this._pendingEvents.clear()
-    this._observers.clear()
+  hasPendingEvent ({eventName}) {
+    return this._pendingEvents.has(eventName)
+  }
+
+  clear ({eventName} = {}) {
+    if (!eventName) {
+      this._pendingEvents.clear()
+      this._observers.clear()
+    } else {
+      this._pendingEvents.delete(eventName)
+      this._observers.delete(eventName)
+    }
   }
 }
 const domainEventBus = new DomainEventBus()

@@ -77,6 +77,21 @@ describe('DomainEventBus', () => {
       expect(DomainEventBus.getNumberOfRegisteredEvents()).equal(0)
       done()
     })
+    it('Should clear all observers and pending events for a specified eventName', (done) => {
+      const givenEventName = 'SOME_EVENT_NAME'
+
+      DomainEventBus.raise({domainEvent: {eventName: givenEventName, payload: {}}})
+      expect(DomainEventBus.hasPendingEvent({eventName: givenEventName}), 'should have a pending event').to.be.true
+      DomainEventBus.clear({eventName: givenEventName})
+      expect(DomainEventBus.hasPendingEvent({eventName: givenEventName}), 'should not have any pending event').to.be.false
+
+      DomainEventBus.register({eventName: givenEventName, observer: () => null})
+      expect(DomainEventBus.getNumberOfRegisteredEvents(), 'should have an observer registered').equal(1)
+      DomainEventBus.clear({eventName: givenEventName})
+      expect(DomainEventBus.getNumberOfRegisteredEvents(), 'should have no observers registered').equal(0)
+
+      done()
+    })
     it('Should execute all observers related to an event', (done) => {
       const givenEventName = 'givenEventName'
       const domainEvent = {

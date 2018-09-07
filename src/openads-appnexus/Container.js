@@ -3,7 +3,6 @@ import LogProvider from './LogProvider'
 import AppNexusConnector from './AppNexusConnector'
 import AstClientImpl from './AstClientImpl'
 import ApnTagWrapper from './ApnTagWrapper'
-import PullingAdRepository from './repository/PullingAdRepository'
 import AdListenerRepository from './repository/AdListenerRepository'
 
 export default class Container {

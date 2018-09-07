@@ -1,25 +1,20 @@
-/* eslint-disable no-undef */
+import DomainEventBus from '../service/DomainEventBus'
+
 const AD_STORED = 'AD_STORED'
 
 const DEFAULT_TIMEOUT = 20000
+const TIMEOUT_EXCEPTION = 'Timeout waiting to retrieve the Ad'
 
 export default class AdListenerRepository {
-  constructor ({dom, timeout = DEFAULT_TIMEOUT} = {}) {
-    this._dom = dom
+  constructor ({timeout = DEFAULT_TIMEOUT} = {}) {
     this._timeout = timeout
   }
 
   find ({id}) {
-    return Promise.resolve(id)
-      .then(id => this._ads.has(id) ? this._ads.get(id) : this._listenForData({id}))
-  }
-
-  _listenForData ({id}) {
     return Promise.race([
       new Promise((resolve, reject) => {
-        this._dom.addEventListener(`${AD_STORED}_${id}`, e => {
-          resolve(e.detail.adResponse)
-        })
+        const eventId = this._eventId({id})
+        DomainEventBus.register({eventName: eventId, observer: ({event, payload}) => resolve(payload)})
       }),
       new Promise((resolve, reject) => {
         const timeoutId = setTimeout(() => {
@@ -30,8 +25,18 @@ export default class AdListenerRepository {
   }
 
   save ({id, adResponse}) {
-    this._dom.dispatchEvent(new CustomEvent(`${AD_STORED}_${id}`, {
-      detail: {id, adResponse}
-    }))
+    return Promise.resolve(this._eventId({id}))
+      .then(eventId => DomainEventBus.raise({domainEvent: {
+        eventName: this._eventId({id}),
+        payload: adResponse
+      }}))
+  }
+
+  remove ({id}) {
+    DomainEventBus.clear({eventName: this._eventId({id})})
+  }
+
+  _eventId ({id}) {
+    return `${AD_STORED}_${id}`
   }
 }
