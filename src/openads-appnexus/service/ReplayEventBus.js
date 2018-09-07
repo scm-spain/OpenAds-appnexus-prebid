@@ -1,6 +1,6 @@
 import {observerErrorThrown} from './observerErrorThrown'
 
-class DomainEventBus {
+class ReplayEventBus {
   constructor () {
     this._observers = new Map()
     this._pendingEvents = new Map()
@@ -21,20 +21,20 @@ class DomainEventBus {
     }
   }
 
-  raise ({domainEvent}) {
-    if (this._observers.has(domainEvent.eventName)) {
+  raise ({event}) {
+    if (this._observers.has(event.eventName)) {
       this._observers
-        .get(domainEvent.eventName)
+        .get(event.eventName)
         .forEach(observer => {
           try {
             observer({
-              event: domainEvent.eventName,
-              payload: domainEvent.payload,
-              dispatcher: (data) => this.raise({domainEvent: data})
+              event: event.eventName,
+              payload: event.payload,
+              dispatcher: (data) => this.raise({event: data})
             })
           } catch (err) {
             this.raise({
-              domainEvent: observerErrorThrown({
+              event: observerErrorThrown({
                 message: 'Error processing the observer.',
                 error: err
               })
@@ -42,15 +42,15 @@ class DomainEventBus {
           }
         })
     } else {
-      this._pendingEvents.set(domainEvent.eventName, domainEvent)
+      this._pendingEvents.set(event.eventName, event)
     }
   }
 
   _replayPendingEvent ({eventName}) {
     if (this.hasPendingEvent({eventName})) {
-      const domainEvent = this._pendingEvents.get(eventName)
+      const pendingEvent = this._pendingEvents.get(eventName)
       this._pendingEvents.delete(eventName)
-      this.raise({domainEvent})
+      this.raise({event: pendingEvent})
     }
   }
 
@@ -76,5 +76,5 @@ class DomainEventBus {
     }
   }
 }
-const domainEventBus = new DomainEventBus()
-export default domainEventBus
+const replayEventBus = new ReplayEventBus()
+export default replayEventBus

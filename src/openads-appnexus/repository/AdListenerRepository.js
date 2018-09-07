@@ -1,4 +1,4 @@
-import DomainEventBus from '../service/DomainEventBus'
+import ReplayEventBus from '../service/ReplayEventBus'
 
 const AD_STORED = 'AD_STORED'
 
@@ -14,7 +14,7 @@ export default class AdListenerRepository {
     return Promise.race([
       new Promise((resolve, reject) => {
         const eventId = this._eventId({id})
-        DomainEventBus.register({eventName: eventId, observer: ({event, payload}) => resolve(payload)})
+        ReplayEventBus.register({eventName: eventId, observer: ({event, payload}) => resolve(payload)})
       }),
       new Promise((resolve, reject) => {
         const timeoutId = setTimeout(() => {
@@ -26,7 +26,7 @@ export default class AdListenerRepository {
 
   save ({id, adResponse}) {
     return Promise.resolve(this._eventId({id}))
-      .then(eventId => DomainEventBus.raise({domainEvent: {
+      .then(eventId => ReplayEventBus.raise({event: {
         eventName: this._eventId({id}),
         payload: adResponse
       }}))
@@ -34,7 +34,7 @@ export default class AdListenerRepository {
 
   remove ({id}) {
     return Promise.resolve()
-      .then(() => DomainEventBus.clear({eventName: this._eventId({id})}))
+      .then(() => ReplayEventBus.clear({eventName: this._eventId({id})}))
   }
 
   _eventId ({id}) {

@@ -2,17 +2,17 @@
 
 import {expect} from 'chai'
 import sinon from 'sinon'
-import DomainEventBus from '../../../openads-appnexus/service/DomainEventBus'
-import DomainEventBusWrapper from './helper/DomainEventBusWrapper'
+import ReplayEventBus from '../../../openads-appnexus/service/ReplayEventBus'
+import ReplayEventBusWrapper from './helper/ReplayEventBusWrapper'
 
-describe('DomainEventBus', () => {
+describe('ReplayEventBus', () => {
   beforeEach(() => {
-    DomainEventBus.clear()
+    ReplayEventBus.clear()
   })
   describe('Given invalid register parameters', () => {
     it('Should fail if eventName is not present', (done) => {
       try {
-        DomainEventBus.register({eventName: undefined, observer: undefined})
+        ReplayEventBus.register({eventName: undefined, observer: undefined})
         done(new Error('Should fail'))
       } catch (error) {
         done()
@@ -20,111 +20,111 @@ describe('DomainEventBus', () => {
     })
     it('Should fail if observer is not a function', (done) => {
       try {
-        DomainEventBus.register({eventName: 'givenEvent', observer: undefined})
+        ReplayEventBus.register({eventName: 'givenEvent', observer: undefined})
         done(new Error('Should fail'))
       } catch (error) {
         done()
       }
     })
     it('Should return 0 when calling getNumberOfRegisteredEvents if there is no events registered', (done) => {
-      DomainEventBus.clear()
-      const result = DomainEventBus.getNumberOfRegisteredEvents()
+      ReplayEventBus.clear()
+      const result = ReplayEventBus.getNumberOfRegisteredEvents()
       expect(0).equal(result)
       done()
     })
     it('Should return 0 when calling getNumberOfObserversRegisteredForAnEvent if there is no events registered', (done) => {
-      DomainEventBus.clear()
+      ReplayEventBus.clear()
       const givenEventName = 'nonExistingEvent'
-      const result = DomainEventBus.getNumberOfObserversRegisteredForAnEvent({eventName: givenEventName})
+      const result = ReplayEventBus.getNumberOfObserversRegisteredForAnEvent({eventName: givenEventName})
       expect(0).equal(result)
       done()
     })
   })
-  describe('Given a registered DomainEventBus', () => {
+  describe('Given a registered ReplayEventBus', () => {
     let observerSpy = sinon.spy()
     beforeEach(function () {
       observerSpy.reset()
     })
     it('Should execute observer callback using the raised payload', (done) => {
       const givenEventName = 'givenEventName'
-      const domainEvent = {
+      const givenEvent = {
         eventName: givenEventName,
-        payload: 'domainEvent payload'
+        payload: 'event payload'
       }
 
-      DomainEventBus.register({eventName: givenEventName, observer: observerSpy})
-      DomainEventBus.raise({domainEvent})
+      ReplayEventBus.register({eventName: givenEventName, observer: observerSpy})
+      ReplayEventBus.raise({event: givenEvent})
 
       expect(observerSpy.calledOnce).equal(true)
-      expect(observerSpy.lastCall.args[0].payload).equal(domainEvent.payload)
-      expect(DomainEventBus.getNumberOfRegisteredEvents()).equal(1)
+      expect(observerSpy.lastCall.args[0].payload).equal(givenEvent.payload)
+      expect(ReplayEventBus.getNumberOfRegisteredEvents()).equal(1)
 
-      const domainEventBusTestHelper = new DomainEventBusWrapper()
+      const eventBusTestHelper = new ReplayEventBusWrapper()
       const givenEventName2 = 'givenEventName2'
-      const domainEvent2 = {
+      const givenEvent2 = {
         eventName: givenEventName2,
-        payload: 'domainEvent 2 payload'
+        payload: 'event 2 payload'
       }
-      domainEventBusTestHelper.register({eventName: givenEventName2, observer: observerSpy})
-      domainEventBusTestHelper.raise({domainEvent: domainEvent2})
+      eventBusTestHelper.register({eventName: givenEventName2, observer: observerSpy})
+      eventBusTestHelper.raise({event: givenEvent2})
 
       expect(observerSpy.calledTwice).equal(true)
-      expect(observerSpy.lastCall.args[0].payload).equal(domainEvent2.payload)
-      expect(DomainEventBus.getNumberOfRegisteredEvents()).equal(2)
+      expect(observerSpy.lastCall.args[0].payload).equal(givenEvent2.payload)
+      expect(ReplayEventBus.getNumberOfRegisteredEvents()).equal(2)
       done()
     })
     it('Should clear all observers', (done) => {
-      expect(DomainEventBus.getNumberOfRegisteredEvents()).equal(0)
+      expect(ReplayEventBus.getNumberOfRegisteredEvents()).equal(0)
       done()
     })
     it('Should clear all observers and pending events for a specified eventName', (done) => {
       const givenEventName = 'SOME_EVENT_NAME'
 
-      DomainEventBus.raise({domainEvent: {eventName: givenEventName, payload: {}}})
-      expect(DomainEventBus.hasPendingEvent({eventName: givenEventName}), 'should have a pending event').to.be.true
-      DomainEventBus.clear({eventName: givenEventName})
-      expect(DomainEventBus.hasPendingEvent({eventName: givenEventName}), 'should not have any pending event').to.be.false
+      ReplayEventBus.raise({event: {eventName: givenEventName, payload: {}}})
+      expect(ReplayEventBus.hasPendingEvent({eventName: givenEventName}), 'should have a pending event').to.be.true
+      ReplayEventBus.clear({eventName: givenEventName})
+      expect(ReplayEventBus.hasPendingEvent({eventName: givenEventName}), 'should not have any pending event').to.be.false
 
-      DomainEventBus.register({eventName: givenEventName, observer: () => null})
-      expect(DomainEventBus.getNumberOfRegisteredEvents(), 'should have an observer registered').equal(1)
-      DomainEventBus.clear({eventName: givenEventName})
-      expect(DomainEventBus.getNumberOfRegisteredEvents(), 'should have no observers registered').equal(0)
+      ReplayEventBus.register({eventName: givenEventName, observer: () => null})
+      expect(ReplayEventBus.getNumberOfRegisteredEvents(), 'should have an observer registered').equal(1)
+      ReplayEventBus.clear({eventName: givenEventName})
+      expect(ReplayEventBus.getNumberOfRegisteredEvents(), 'should have no observers registered').equal(0)
 
       done()
     })
     it('Should execute all observers related to an event', (done) => {
       const givenEventName = 'givenEventName'
-      const domainEvent = {
+      const givenEvent = {
         eventName: givenEventName,
         payload: '1'
       }
 
-      DomainEventBus.register({eventName: givenEventName, observer: observerSpy})
-      DomainEventBus.register({eventName: givenEventName, observer: observerSpy})
-      DomainEventBus.raise({domainEvent: domainEvent})
+      ReplayEventBus.register({eventName: givenEventName, observer: observerSpy})
+      ReplayEventBus.register({eventName: givenEventName, observer: observerSpy})
+      ReplayEventBus.raise({event: givenEvent})
       expect(observerSpy.getCalls().length).equal(2)
-      expect(observerSpy.getCall(0).args[0].payload).equal(domainEvent.payload)
-      expect(observerSpy.getCall(1).args[0].payload).equal(domainEvent.payload)
-      expect(DomainEventBus.getNumberOfRegisteredEvents()).equal(1)
-      expect(DomainEventBus.getNumberOfObserversRegisteredForAnEvent({eventName: givenEventName})).equal(2)
+      expect(observerSpy.getCall(0).args[0].payload).equal(givenEvent.payload)
+      expect(observerSpy.getCall(1).args[0].payload).equal(givenEvent.payload)
+      expect(ReplayEventBus.getNumberOfRegisteredEvents()).equal(1)
+      expect(ReplayEventBus.getNumberOfObserversRegisteredForAnEvent({eventName: givenEventName})).equal(2)
       done()
     })
   })
   describe('Given 1 event with 1 subscriber which has a dispatcher to raise a second event with another subscriber', () => {
     it('Should be raised event 2 by subscriber 1 when event 1 is raised', (done) => {
       const givenEvent1Name = 'event-1'
-      const event1DomainEvent = {
+      const givenEvent1 = {
         eventName: givenEvent1Name,
         payload: 'event-1-payload'
       }
       const givenEvent2Name = 'event-2'
-      const event2DomainEvent = {
+      const givenEvent2 = {
         eventName: givenEvent2Name,
         payload: 'event-2-payload'
       }
       const observer1 = {
         getObserverFunction: ({payload, dispatcher}) => {
-          dispatcher(event2DomainEvent)
+          dispatcher(givenEvent2)
         }
       }
       const observer2 = {
@@ -134,15 +134,15 @@ describe('DomainEventBus', () => {
       const spy1 = sinon.spy(observer1, 'getObserverFunction')
       const spy2 = sinon.spy(observer2, 'getObserverFunction')
 
-      DomainEventBus.register({eventName: givenEvent1Name, observer: observer1.getObserverFunction})
-      DomainEventBus.register({eventName: givenEvent2Name, observer: observer2.getObserverFunction})
-      DomainEventBus.raise({domainEvent: event1DomainEvent})
-      expect(DomainEventBus.getNumberOfRegisteredEvents()).equal(2)
+      ReplayEventBus.register({eventName: givenEvent1Name, observer: observer1.getObserverFunction})
+      ReplayEventBus.register({eventName: givenEvent2Name, observer: observer2.getObserverFunction})
+      ReplayEventBus.raise({event: givenEvent1})
+      expect(ReplayEventBus.getNumberOfRegisteredEvents()).equal(2)
       expect(spy1.calledOnce).equal(true)
-      expect(spy1.getCall(0).args[0].payload).equal(event1DomainEvent.payload)
+      expect(spy1.getCall(0).args[0].payload).equal(givenEvent1.payload)
       expect(spy1.getCall(0).args[0].dispatcher).is.a('function')
       expect(spy2.calledOnce).equal(true)
-      expect(spy2.getCall(0).args[0].payload).equal(event2DomainEvent.payload)
+      expect(spy2.getCall(0).args[0].payload).equal(givenEvent2.payload)
       expect(spy2.getCall(0).args[0].dispatcher).is.a('function')
       done()
     })
@@ -150,7 +150,7 @@ describe('DomainEventBus', () => {
   describe('Given 1 event with 2 subscribers, one of them causing an error', () => {
     it('Should execute the non failing subscriber smoothly and log the error', (done) => {
       const givenEvent1Name = 'event-1'
-      const event1DomainEvent = {
+      const givenEvent1 = {
         eventName: givenEvent1Name,
         payload: 'event-1-payload'
       }
@@ -169,16 +169,16 @@ describe('DomainEventBus', () => {
       const spy2 = sinon.spy(observer2, 'getObserverFunction')
 
       const errorObserver = (payload) => { console.log('ERROR_EVENT TEST: ', payload) }
-      DomainEventBus.register({
+      ReplayEventBus.register({
         eventName: 'ERROR_EVENT',
         observer: errorObserver})
 
-      DomainEventBus.register({eventName: givenEvent1Name, observer: observer1.getObserverFunction})
-      DomainEventBus.register({eventName: givenEvent1Name, observer: observer2.getObserverFunction})
-      DomainEventBus.raise({domainEvent: event1DomainEvent})
+      ReplayEventBus.register({eventName: givenEvent1Name, observer: observer1.getObserverFunction})
+      ReplayEventBus.register({eventName: givenEvent1Name, observer: observer2.getObserverFunction})
+      ReplayEventBus.raise({event: givenEvent1})
 
-      expect(DomainEventBus.getNumberOfRegisteredEvents()).equal(2)
-      expect(DomainEventBus.getNumberOfObserversRegisteredForAnEvent({eventName: givenEvent1Name})).equal(2)
+      expect(ReplayEventBus.getNumberOfRegisteredEvents()).equal(2)
+      expect(ReplayEventBus.getNumberOfObserversRegisteredForAnEvent({eventName: givenEvent1Name})).equal(2)
       expect(spy1.calledOnce).equal(true)
       expect(spy2.calledOnce).equal(true)
       done()
@@ -187,15 +187,15 @@ describe('DomainEventBus', () => {
 
   describe('Given events raised before than their observer', () => {
     it('Should consume the last raised event with the same name when the observer is registered', (done) => {
-      DomainEventBus.raise({domainEvent: {
+      ReplayEventBus.raise({event: {
         eventName: 'TEST',
         payload: {number: 1}
       }})
-      DomainEventBus.raise({domainEvent: {
+      ReplayEventBus.raise({event: {
         eventName: 'TEST',
         payload: {number: 2}
       }})
-      DomainEventBus.register({eventName: 'TEST',
+      ReplayEventBus.register({eventName: 'TEST',
         observer: ({event, payload}) => {
           expect(event, 'should receive the same event name').to.equal('TEST')
           expect(payload, 'should receive the same event name').to.deep.equal({number: 2})

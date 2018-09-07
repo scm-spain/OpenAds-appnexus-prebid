@@ -1,22 +1,22 @@
 import {expect} from 'chai'
 
-import DomainEventBus from '../../../openads-appnexus/service/DomainEventBus'
+import ReplayEventBus from '../../../openads-appnexus/service/ReplayEventBus'
 import AdListenerRepository from '../../../openads-appnexus/repository/AdListenerRepository'
 
 describe('AdListenerRepository', function () {
   beforeEach(() => {
-    DomainEventBus.clear()
+    ReplayEventBus.clear()
   })
   describe('remove method', function () {
     it('should clear the message bus for the event name related to the received id', done => {
       const givenId = 'ad1'
-      DomainEventBus.clear()
-      DomainEventBus.register({eventName: 'AD_STORED_ad1', observer: () => null})
+      ReplayEventBus.clear()
+      ReplayEventBus.register({eventName: 'AD_STORED_ad1', observer: () => null})
 
       const repository = new AdListenerRepository()
       repository.remove({id: givenId})
         .then(() => {
-          expect(DomainEventBus.getNumberOfRegisteredEvents(), 'the observer has not been removed').to.equal(0)
+          expect(ReplayEventBus.getNumberOfRegisteredEvents(), 'the observer has not been removed').to.equal(0)
           done()
         })
         .catch(e => done(e))
@@ -46,7 +46,7 @@ describe('AdListenerRepository', function () {
         })
         .catch(e => done(e))
 
-      DomainEventBus.raise({domainEvent: {
+      ReplayEventBus.raise({event: {
         eventName: `AD_STORED_${givenId}`,
         payload: {
           id: givenId
@@ -66,7 +66,7 @@ describe('AdListenerRepository', function () {
       const repository = new AdListenerRepository()
       repository.save({id: givenId, adResponse: givenAdResponse})
         .then(() => {
-          expect(DomainEventBus.hasPendingEvent({eventName: `AD_STORED_${givenId}`}), 'should have a pending event').to.be.true
+          expect(ReplayEventBus.hasPendingEvent({eventName: `AD_STORED_${givenId}`}), 'should have a pending event').to.be.true
           done()
         })
         .catch(e => done(e))
