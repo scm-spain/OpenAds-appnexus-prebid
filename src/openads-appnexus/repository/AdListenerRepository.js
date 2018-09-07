@@ -33,7 +33,8 @@ export default class AdListenerRepository {
   }
 
   remove ({id}) {
-    DomainEventBus.clear({eventName: this._eventId({id})})
+    return Promise.resolve()
+      .then(() => DomainEventBus.clear({eventName: this._eventId({id})}))
   }
 
   _eventId ({id}) {
