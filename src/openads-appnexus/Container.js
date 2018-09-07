@@ -6,12 +6,12 @@ import ApnTagWrapper from './ApnTagWrapper'
 import AdListenerRepository from './repository/AdListenerRepository'
 
 export default class Container {
-  constructor ({config} = {}) {
+  constructor({config} = {}) {
     this._config = config
     this._instances = new Map()
   }
 
-  getInstance ({key}) {
+  getInstance({key}) {
     if (undefined === this._instances.get(key)) {
       try {
         this._instances.set(key, this['_build' + key]())
@@ -22,7 +22,7 @@ export default class Container {
     return this._instances.get(key)
   }
 
-  _buildAppNexusConnector () {
+  _buildAppNexusConnector() {
     return new AppNexusConnector({
       member: this._config.member,
       loggerProvider: this.getInstance({key: 'LogProvider'}),
@@ -32,13 +32,13 @@ export default class Container {
     })
   }
 
-  _buildLogger () {
+  _buildLogger() {
     return this.getInstance({key: 'LogProvider'}).logger({
       loggerName: 'AppNexusConnector'
     })
   }
 
-  _buildLogProvider () {
+  _buildLogProvider() {
     return new LogProvider({
       logLevel: LogLevel,
       loggerName: this._config.loggerName,
@@ -46,20 +46,20 @@ export default class Container {
     })
   }
 
-  _buildAstClient () {
+  _buildAstClient() {
     return new AstClientImpl({
       logger: this.getInstance({key: 'Logger'}),
       apnTag: this.getInstance({key: 'ApnTag'})
     })
   }
 
-  _buildAdRepository () {
+  _buildAdRepository() {
     return new AdListenerRepository({
       dom: window.document
     })
   }
 
-  _buildApnTag () {
+  _buildApnTag() {
     return ApnTagWrapper.build()
   }
 }
