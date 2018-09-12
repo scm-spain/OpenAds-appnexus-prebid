@@ -15,40 +15,53 @@ class ReplayEventBus {
     }
     if (!this._observers.has(eventName)) {
       this._observers.set(eventName, [observer])
-      this._replayPendingEvent({eventName})
     } else {
       this._observers.get(eventName).push(observer)
     }
+    this._replayPendingEvents({eventName, observer})
   }
 
   raise({event}) {
+    this._addPendingEvent({event})
     if (this._observers.has(event.eventName)) {
-      this._observers.get(event.eventName).forEach(observer => {
-        try {
-          observer({
-            event: event.eventName,
-            payload: event.payload,
-            dispatcher: data => this.raise({event: data})
-          })
-        } catch (err) {
-          this.raise({
-            event: observerErrorThrown({
-              message: 'Error processing the observer.',
-              error: err
-            })
-          })
-        }
-      })
-    } else {
-      this._pendingEvents.set(event.eventName, event)
+      this._observers
+        .get(event.eventName)
+        .forEach(observer => this._processEvent({event, observer}))
     }
   }
 
-  _replayPendingEvent({eventName}) {
-    if (this.hasPendingEvent({eventName})) {
-      const pendingEvent = this._pendingEvents.get(eventName)
-      this._pendingEvents.delete(eventName)
-      this.raise({event: pendingEvent})
+  _addPendingEvent({event}) {
+    if (!this._pendingEvents.has(event.eventName)) {
+      this._pendingEvents.set(event.eventName, [event])
+    } else {
+      this._pendingEvents.get(event.eventName).push(event)
+    }
+  }
+
+  _replayPendingEvents({eventName, observer}) {
+    if (this._pendingEvents.has(eventName)) {
+      this._pendingEvents
+        .get(eventName)
+        .forEach(pendingEvent =>
+          this._processEvent({event: pendingEvent, observer})
+        )
+    }
+  }
+
+  _processEvent({event, observer}) {
+    try {
+      observer({
+        event: event.eventName,
+        payload: event.payload,
+        dispatcher: data => this.raise({event: data})
+      })
+    } catch (err) {
+      this.raise({
+        event: observerErrorThrown({
+          message: 'Error processing the observer.',
+          error: err
+        })
+      })
     }
   }
 

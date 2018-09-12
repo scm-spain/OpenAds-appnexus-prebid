@@ -234,7 +234,7 @@ describe('ReplayEventBus', () => {
   })
 
   describe('Given events raised before than their observer', () => {
-    it('Should consume the last raised event with the same name when the observer is registered', done => {
+    it('Should consume the the events registered before registering the observer', done => {
       ReplayEventBus.raise({
         event: {
           eventName: 'TEST',
@@ -247,16 +247,18 @@ describe('ReplayEventBus', () => {
           payload: {number: 2}
         }
       })
+      const observerWrapper = {
+        observer: () => null
+      }
+      const observerSpy = sinon.spy(observerWrapper, 'observer')
+
       ReplayEventBus.register({
         eventName: 'TEST',
-        observer: ({event, payload}) => {
-          expect(event, 'should receive the same event name').to.equal('TEST')
-          expect(payload, 'should receive the same event name').to.deep.equal({
-            number: 2
-          })
-          done()
-        }
+        observer: observerWrapper.observer
       })
+
+      expect(observerSpy.callCount, 'should be called 2 times').to.equal(2)
+      done()
     })
   })
 })
