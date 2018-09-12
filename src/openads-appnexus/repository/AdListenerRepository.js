@@ -32,7 +32,7 @@ export default class AdListenerRepository {
     return Promise.resolve(this._eventId({id})).then(eventId =>
       ReplayEventBus.raise({
         event: {
-          eventName: this._eventId({id}),
+          eventName: eventId,
           payload: adResponse
         }
       })
