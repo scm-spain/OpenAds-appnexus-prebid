@@ -148,7 +148,7 @@ describe('AstClient implementation', function() {
         .loadTags()
       setTimeout(() => {
         astClient.loadTags()
-      }, 20)
+      }, 30)
       setTimeout(() => {
         expect(anqSpy.calledTwice, 'anq shoud have been called').to.be.true
         expect(loadTagsSpy.calledTwice, 'loadTags shoud have been called').to.be
