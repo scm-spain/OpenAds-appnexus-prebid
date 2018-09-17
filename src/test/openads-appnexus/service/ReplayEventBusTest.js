@@ -32,10 +32,10 @@ describe('ReplayEventBus', () => {
       expect(0).equal(result)
       done()
     })
-    it('Should return 0 when calling getNumberOfObserversRegisteredForAnEvent if there is no events registered', done => {
+    it('Should return 0 when calling getNumberOfSubscriptionsRegisteredForAnEvent if there is no events registered', done => {
       ReplayEventBus.clear()
       const givenEventName = 'nonExistingEvent'
-      const result = ReplayEventBus.getNumberOfObserversRegisteredForAnEvent({
+      const result = ReplayEventBus.getNumberOfSubscriptionsRegisteredForAnEvent({
         eventName: givenEventName
       })
       expect(0).equal(result)
@@ -90,12 +90,12 @@ describe('ReplayEventBus', () => {
 
       ReplayEventBus.raise({event: {eventName: givenEventName, payload: {}}})
       expect(
-        ReplayEventBus.hasPendingEvent({eventName: givenEventName}),
+        ReplayEventBus.hasPendingEvents({eventName: givenEventName}),
         'should have a pending event'
       ).to.be.true
       ReplayEventBus.clear({eventName: givenEventName})
       expect(
-        ReplayEventBus.hasPendingEvent({eventName: givenEventName}),
+        ReplayEventBus.hasPendingEvents({eventName: givenEventName}),
         'should not have any pending event'
       ).to.be.false
 
@@ -133,7 +133,7 @@ describe('ReplayEventBus', () => {
       expect(observerSpy.getCall(1).args[0].payload).equal(givenEvent.payload)
       expect(ReplayEventBus.getNumberOfRegisteredEvents()).equal(1)
       expect(
-        ReplayEventBus.getNumberOfObserversRegisteredForAnEvent({
+        ReplayEventBus.getNumberOfSubscriptionsRegisteredForAnEvent({
           eventName: givenEventName
         })
       ).equal(2)
@@ -223,7 +223,7 @@ describe('ReplayEventBus', () => {
 
       expect(ReplayEventBus.getNumberOfRegisteredEvents()).equal(2)
       expect(
-        ReplayEventBus.getNumberOfObserversRegisteredForAnEvent({
+        ReplayEventBus.getNumberOfSubscriptionsRegisteredForAnEvent({
           eventName: givenEvent1Name
         })
       ).equal(2)

@@ -209,7 +209,6 @@ describe('AppNexus Connector', function() {
       const adRepositoryMock = createAdRepositoryMock({
         findResult: 'whatever'
       })
-      const removeSpy = sinon.spy(adRepositoryMock, 'remove')
       const findSpy = sinon.spy(adRepositoryMock, 'find')
       const modifyTagSpy = sinon.spy(astClientMock, 'modifyTag')
       const refreshSpy = sinon.spy(astClientMock, 'refresh')
@@ -240,14 +239,6 @@ describe('AppNexus Connector', function() {
               native: givenParameters.native
             }
           }
-          expect(
-            removeSpy.calledOnce,
-            'should have removed the Ad from the repository'
-          ).to.be.true
-          expect(
-            removeSpy.args[0][0],
-            'should have removed the Ad from the repository with valid parameters'
-          ).to.deep.equal({id: givenParameters.domElementId})
           expect(modifyTagSpy.calledOnce, 'should have modified the tag').to.be
             .true
           expect(

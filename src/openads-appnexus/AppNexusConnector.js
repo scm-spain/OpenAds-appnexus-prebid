@@ -33,6 +33,7 @@ export default class AppNexusConnector {
 
   loadAd({domElementId, placement, sizes, segmentation, native}) {
     return Promise.resolve()
+      .then(() => this._adRepository.remove({id: domElementId}))
       .then(() =>
         this._astClient.defineTag({
           member: this._member,

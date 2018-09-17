@@ -1,32 +1,43 @@
 import {observerErrorThrown} from './observerErrorThrown'
+import {generateUUID} from './generateUUID'
 
 class ReplayEventBus {
   constructor() {
-    this._observers = new Map()
+    this._subscriptions = new Map()
     this._pendingEvents = new Map()
   }
 
   register({eventName, observer}) {
+    const subscriptionId = generateUUID()
+    const subscription = {
+      id: subscriptionId,
+      active: true,
+      observer
+    }
     if (!eventName) {
       throw new Error('Event Name is required')
     }
     if (typeof observer !== 'function') {
       throw new Error('Observer must be a function')
     }
-    if (!this._observers.has(eventName)) {
-      this._observers.set(eventName, [observer])
+    if (!this._subscriptions.has(eventName)) {
+      this._subscriptions.set(eventName, [subscription])
     } else {
-      this._observers.get(eventName).push(observer)
+      this._subscriptions.get(eventName).push(subscription)
     }
-    this._replayPendingEvents({eventName, observer})
+    this._replayPendingEvents({eventName, subscription})
+    return subscriptionId
   }
 
   raise({event}) {
     this._addPendingEvent({event})
-    if (this._observers.has(event.eventName)) {
-      this._observers
+    if (this._subscriptions.has(event.eventName)) {
+      this._subscriptions
         .get(event.eventName)
-        .forEach(observer => this._processEvent({event, observer}))
+        .filter(subscription => subscription.active)
+        .forEach(activeSubscription =>
+          this._processEvent({event, subscription: activeSubscription})
+        )
     }
   }
 
@@ -38,19 +49,18 @@ class ReplayEventBus {
     }
   }
 
-  _replayPendingEvents({eventName, observer}) {
+  _replayPendingEvents({eventName, subscription}) {
     if (this._pendingEvents.has(eventName)) {
-      this._pendingEvents
-        .get(eventName)
-        .forEach(pendingEvent =>
-          this._processEvent({event: pendingEvent, observer})
-        )
+      const pendingEvent = this._pendingEvents.get(eventName).shift()
+      if (pendingEvent) {
+        this._processEvent({event: pendingEvent, subscription})
+      }
     }
   }
 
-  _processEvent({event, observer}) {
+  _processEvent({event, subscription}) {
     try {
-      observer({
+      subscription.observer({
         event: event.eventName,
         payload: event.payload,
         dispatcher: data => this.raise({event: data})
@@ -65,27 +75,42 @@ class ReplayEventBus {
     }
   }
 
-  getNumberOfRegisteredEvents() {
-    return this._observers.size
+  unregister({eventName, subscriptionId}) {
+    if (this._subscriptions.has(eventName)) {
+      const subscriptionIndex = this._subscriptions
+        .get(eventName)
+        .findIndex(subscription => subscription.id === subscriptionId)
+      if (subscriptionIndex > -1) {
+        this._subscriptions.get(eventName).splice(subscriptionIndex, 1)
+        return true
+      }
+    }
+    return false
   }
 
-  getNumberOfObserversRegisteredForAnEvent({eventName}) {
-    return this._observers.has(eventName)
-      ? this._observers.get(eventName).length
+  getNumberOfRegisteredEvents() {
+    return this._subscriptions.size
+  }
+
+  getNumberOfSubscriptionsRegisteredForAnEvent({eventName}) {
+    return this._subscriptions.has(eventName)
+      ? this._subscriptions.get(eventName).length
       : 0
   }
 
-  hasPendingEvent({eventName}) {
+  getNumberOfPendingEvents({eventName}) {
     return this._pendingEvents.has(eventName)
+      ? this._pendingEvents.get(eventName).length
+      : 0
   }
 
   clear({eventName} = {}) {
     if (!eventName) {
       this._pendingEvents.clear()
-      this._observers.clear()
+      this._subscriptions.clear()
     } else {
       this._pendingEvents.delete(eventName)
-      this._observers.delete(eventName)
+      this._subscriptions.delete(eventName)
     }
   }
 }

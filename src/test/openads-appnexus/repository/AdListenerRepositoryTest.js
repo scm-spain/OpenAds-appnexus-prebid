@@ -7,28 +7,6 @@ describe('AdListenerRepository', function() {
   beforeEach(() => {
     ReplayEventBus.clear()
   })
-  describe('remove method', function() {
-    it('should clear the message bus for the event name related to the received id', done => {
-      const givenId = 'ad1'
-      ReplayEventBus.clear()
-      ReplayEventBus.register({
-        eventName: 'AD_STORED_ad1',
-        observer: () => null
-      })
-
-      const repository = new AdListenerRepository()
-      repository
-        .remove({id: givenId})
-        .then(() => {
-          expect(
-            ReplayEventBus.getNumberOfRegisteredEvents(),
-            'the observer has not been removed'
-          ).to.equal(0)
-          done()
-        })
-        .catch(e => done(e))
-    })
-  })
   describe('find method', function() {
     it('should end with a timeout exception if no ad is found within the time limit', done => {
       const givenTimeout = 5
@@ -57,14 +35,50 @@ describe('AdListenerRepository', function() {
         })
         .catch(e => done(e))
 
-      ReplayEventBus.raise({
-        event: {
-          eventName: `AD_STORED_${givenId}`,
-          payload: {
-            id: givenId
+      const raiseId = setTimeout(() => {
+        ReplayEventBus.raise({
+          event: {
+            eventName: `AD_STORED_${givenId}`,
+            payload: {
+              id: givenId
+            }
           }
-        }
+        })
+        clearTimeout(raiseId)
+      }, 100)
+    })
+    it('should return the previous stored value if an Ad was previously saved', done => {
+      const givenTimeout = 2000
+      const givenId = 'found'
+      const givenAdResponse = {
+        what: 'ever'
+      }
+      const repository = new AdListenerRepository({
+        timeout: givenTimeout,
+        initialAds: [[givenId, givenAdResponse]]
       })
+
+      repository
+        .find({id: givenId})
+        .then(ad1 => {
+          expect(ad1, 'should be the previously saved ad').to.deep.equal(
+            givenAdResponse
+          )
+          expect(
+            ReplayEventBus.getNumberOfPendingEvents({
+              eventName: `AD_STORED_${givenId}`
+            }),
+            'should not register any pending event'
+          ).to.equal(0)
+          expect(
+            ReplayEventBus.getNumberOfSubscriptionsRegisteredForAnEvent({
+              eventName: `AD_STORED_${givenId}`
+            }),
+            'should not register any observer'
+          ).to.equal(0)
+          done()
+        })
+        .catch(e => done(e))
     })
   })
   describe('save method', function() {
@@ -81,9 +95,41 @@ describe('AdListenerRepository', function() {
         .save({id: givenId, adResponse: givenAdResponse})
         .then(() => {
           expect(
-            ReplayEventBus.hasPendingEvent({eventName: `AD_STORED_${givenId}`}),
+            ReplayEventBus.getNumberOfPendingEvents({
+              eventName: `AD_STORED_${givenId}`
+            }),
             'should have a pending event'
-          ).to.be.true
+          ).to.equal(1)
+          done()
+        })
+        .catch(e => done(e))
+    })
+  })
+  describe('remove method', function() {
+    it('should remove the previously stored Ad', done => {
+      const givenTimeout = 50
+      const givenId = 'found'
+      const givenAdResponse = {
+        what: 'ever'
+      }
+      const repository = new AdListenerRepository({
+        timeout: givenTimeout,
+        initialAds: [[givenId, givenAdResponse]]
+      })
+      repository
+        .remove({id: givenId})
+        .then(() => repository.find({id: givenId}))
+        .then(() => {
+          done(new Error('should not find any Ad'))
+        })
+        .catch(e => {
+          expect(e.message, 'should be a timeout error').to.include('Timeout')
+          expect(
+            ReplayEventBus.getNumberOfSubscriptionsRegisteredForAnEvent({
+              eventName: `AD_STORED_${givenId}`
+            }),
+            'should have a no registered subscriptions after the timeout'
+          ).to.equal(0)
           done()
         })
         .catch(e => done(e))
