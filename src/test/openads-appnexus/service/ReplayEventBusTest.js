@@ -35,9 +35,11 @@ describe('ReplayEventBus', () => {
     it('Should return 0 when calling getNumberOfSubscriptionsRegisteredForAnEvent if there is no events registered', done => {
       ReplayEventBus.clear()
       const givenEventName = 'nonExistingEvent'
-      const result = ReplayEventBus.getNumberOfSubscriptionsRegisteredForAnEvent({
-        eventName: givenEventName
-      })
+      const result = ReplayEventBus.getNumberOfSubscriptionsRegisteredForAnEvent(
+        {
+          eventName: givenEventName
+        }
+      )
       expect(0).equal(result)
       done()
     })
@@ -90,14 +92,14 @@ describe('ReplayEventBus', () => {
 
       ReplayEventBus.raise({event: {eventName: givenEventName, payload: {}}})
       expect(
-        ReplayEventBus.hasPendingEvents({eventName: givenEventName}),
+        ReplayEventBus.getNumberOfPendingEvents({eventName: givenEventName}),
         'should have a pending event'
-      ).to.be.true
+      ).to.equal(1)
       ReplayEventBus.clear({eventName: givenEventName})
       expect(
-        ReplayEventBus.hasPendingEvents({eventName: givenEventName}),
+        ReplayEventBus.getNumberOfPendingEvents({eventName: givenEventName}),
         'should not have any pending event'
-      ).to.be.false
+      ).to.equal(0)
 
       ReplayEventBus.register({eventName: givenEventName, observer: () => null})
       expect(
@@ -232,9 +234,8 @@ describe('ReplayEventBus', () => {
       done()
     })
   })
-
   describe('Given events raised before than their observer', () => {
-    it('Should consume the the events registered before registering the observer', done => {
+    it('Should consume one pending event when an observer is registered', done => {
       ReplayEventBus.raise({
         event: {
           eventName: 'TEST',
@@ -257,7 +258,11 @@ describe('ReplayEventBus', () => {
         observer: observerWrapper.observer
       })
 
-      expect(observerSpy.callCount, 'should be called 2 times').to.equal(2)
+      expect(observerSpy.callCount, 'should be called 1 time').to.equal(1)
+      expect(
+        ReplayEventBus.getNumberOfPendingEvents({eventName: 'TEST'}),
+        'should be one pending event'
+      ).to.equal(1)
       done()
     })
   })
