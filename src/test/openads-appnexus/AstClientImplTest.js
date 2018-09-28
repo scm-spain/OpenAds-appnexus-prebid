@@ -88,7 +88,7 @@ describe('AstClient implementation', function() {
     })
   })
   describe('loadTags method', function() {
-    it('should call the apntag loadTags method via anq', function() {
+    it('should call the apntag loadTags method via anq', done => {
       const loggerMock = createLoggerMock()
       const apnTagMock = createApnTagMock()
       const loadTagsSpy = sinon.spy(apnTagMock, 'loadTags')
@@ -102,9 +102,10 @@ describe('AstClient implementation', function() {
         expect(anqSpy.calledOnce, 'anq shoud have been called').to.be.true
         expect(loadTagsSpy.calledOnce, 'loadTags shoud have been called').to.be
           .true
+        done()
       }, 200)
     })
-    it('should call the apntag loadTags method via anq once after several consecutive calls of loadTags AstClient', function() {
+    it('should call the apntag loadTags method via anq once after several consecutive calls of loadTags AstClient', done => {
       const loggerMock = createLoggerMock()
       const apnTagMock = createApnTagMock()
       const loadTagsSpy = sinon.spy(apnTagMock, 'loadTags')
@@ -126,9 +127,10 @@ describe('AstClient implementation', function() {
         expect(anqSpy.calledOnce, 'anq shoud have been called').to.be.true
         expect(loadTagsSpy.calledOnce, 'loadTags shoud have been called').to.be
           .true
+        done()
       }, 200)
     })
-    it('should call the apntag loadTags method via anq twice after several consecutive calls of loadTags AstClient', function() {
+    it('should call the apntag loadTags method via anq twice after several consecutive calls of loadTags AstClient', done => {
       const loggerMock = createLoggerMock()
       const apnTagMock = createApnTagMock()
       const loadTagsSpy = sinon.spy(apnTagMock, 'loadTags')
@@ -153,6 +155,7 @@ describe('AstClient implementation', function() {
         expect(anqSpy.calledTwice, 'anq shoud have been called').to.be.true
         expect(loadTagsSpy.calledTwice, 'loadTags shoud have been called').to.be
           .true
+        done()
       }, 200)
     })
   })
@@ -179,7 +182,7 @@ describe('AstClient implementation', function() {
     })
   })
   describe('refresh method', function() {
-    it('should call the apntag refresh method via anq', function() {
+    it('should call the apntag refresh method via anq', done => {
       const loggerMock = createLoggerMock()
       const apnTagMock = createApnTagMock()
       const refreshSpy = sinon.spy(apnTagMock, 'refresh')
@@ -199,10 +202,10 @@ describe('AstClient implementation', function() {
           refreshSpy.args[0][0],
           'apntag refresh should receive the parameters in order'
         ).to.deep.equal(givenParameters)
+        done()
       }, 200)
     })
-
-    it('should call the apntag refresh method via anq once after several consecutive calls of refresh AstClient', function() {
+    it('should call the apntag refresh method via anq once after several consecutive calls of refresh AstClient', done => {
       const loggerMock = createLoggerMock()
       const apnTagMock = createApnTagMock()
       const refreshSpy = sinon.spy(apnTagMock, 'refresh')
@@ -240,10 +243,11 @@ describe('AstClient implementation', function() {
           refreshSpy.args[0][0],
           'apntag refresh should receive the parameters in order'
         ).to.deep.equal(givenParameters)
+        done()
       }, 200)
     })
 
-    it('should call the apntag refresh method via anq twice after several consecutive calls of refresh AstClient', function() {
+    it('should call the apntag refresh method via anq twice after several consecutive calls of refresh AstClient', done => {
       const loggerMock = createLoggerMock()
       const apnTagMock = createApnTagMock()
       const refreshSpy = sinon.spy(apnTagMock, 'refresh')
@@ -276,12 +280,13 @@ describe('AstClient implementation', function() {
 
       setTimeout(() => {
         astClient.refresh(['target9'])
-      }, 20)
+      }, 100)
 
       setTimeout(() => {
-        expect(anqSpy.calledOnce, 'anq shoud have been called').to.be.true
-        expect(refreshSpy.calledOnce, 'refresh shoud have been called').to.be
-          .true
+        expect(anqSpy.callCount, 'anq shoud have been called').to.equal(2)
+        expect(refreshSpy.callCount, 'refresh shoud have been called').to.equal(
+          2
+        )
         expect(
           refreshSpy.args[0][0],
           'apntag refresh should receive the parameters in order'
@@ -290,7 +295,56 @@ describe('AstClient implementation', function() {
           refreshSpy.args[1][0],
           'apntag refresh should receive the parameters in order'
         ).to.deep.equal(givenParametersSecondCall)
+        done()
       }, 200)
+    })
+
+    it('should call the apntag refresh method via anq once after several consecutive calls of refresh AstClient', done => {
+      const loggerMock = createLoggerMock()
+      const apnTagMock = createApnTagMock()
+      const refreshSpy = sinon.spy(apnTagMock, 'refresh')
+      const anqSpy = sinon.spy(apnTagMock.anq, 'push')
+      const astClient = new AstClientImpl({
+        apnTag: apnTagMock,
+        logger: loggerMock
+      })
+
+      const expectedCallArgs = [
+        'target1',
+        'target2',
+        'target3',
+        'target4',
+        'target5',
+        'target6',
+        'target7',
+        'target8',
+        'target9'
+      ]
+
+      astClient
+        .refresh(['target1'])
+        .refresh(['target2', 'target3'])
+        .refresh(['target4'])
+        .refresh(['target5'])
+        .refresh(['target6'])
+        .refresh(['target7'])
+        .refresh(['target8'])
+
+      setTimeout(() => {
+        astClient.refresh(['target9'])
+      }, 10)
+
+      setTimeout(() => {
+        expect(anqSpy.callCount, 'anq shoud have been called').to.equal(1)
+        expect(refreshSpy.callCount, 'refresh shoud have been called').to.equal(
+          1
+        )
+        expect(
+          refreshSpy.args[0][0],
+          'apntag refresh should receive the parameters in order'
+        ).to.deep.equal(expectedCallArgs)
+        done()
+      }, 100)
     })
   })
 })
