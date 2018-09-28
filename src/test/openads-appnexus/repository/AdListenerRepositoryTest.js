@@ -80,6 +80,63 @@ describe('AdListenerRepository', function() {
         })
         .catch(e => done(e))
     })
+    it('should support two consecutive finds even if the first one get the Ad after a timeout', done => {
+      const givenTimeout = 50
+      const givenId = 'slowAd'
+      const givenAdResponse1 = {
+        what: 'ever1'
+      }
+      const givenAdResponse2 = {
+        what: 'ever2'
+      }
+      const repository = new AdListenerRepository({
+        timeout: givenTimeout
+      })
+      repository
+        .find({id: givenId})
+        .then(() => Promise.reject(new Error('should give a timeout')))
+        .catch(e =>
+          Promise.resolve()
+            .then(() =>
+              expect(e.message, 'should be a timeout error').to.include(
+                'Timeout'
+              )
+            )
+            .then(() =>
+              ReplayEventBus.raise({
+                event: {
+                  eventName: `AD_STORED_${givenId}`,
+                  payload: givenAdResponse1
+                }
+              })
+            )
+        )
+        .then(() => repository.remove({id: givenId}))
+        .then(() =>
+          Promise.all([
+            repository.find({id: givenId}),
+            Promise.resolve().then(() =>
+              setTimeout(
+                () =>
+                  ReplayEventBus.raise({
+                    event: {
+                      eventName: `AD_STORED_${givenId}`,
+                      payload: givenAdResponse2
+                    }
+                  }),
+                20
+              )
+            )
+          ]).then(([findResponse, nomatter]) => {
+            expect(
+              findResponse,
+              'the findResponse should be the result of the 2nd find'
+            ).to.deep.equal(givenAdResponse2)
+            done()
+          })
+        )
+        .catch(e => done(e))
+    })
   })
   describe('save method', function() {
     it('should send an event to the event bus with the received Ad', done => {

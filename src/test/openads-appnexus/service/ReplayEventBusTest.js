@@ -83,8 +83,13 @@ describe('ReplayEventBus', () => {
       expect(ReplayEventBus.getNumberOfRegisteredEvents()).equal(2)
       done()
     })
-    it('Should clear all observers', done => {
-      expect(ReplayEventBus.getNumberOfRegisteredEvents()).equal(0)
+    it('Should clear all pending events', done => {
+      const givenEventName = 'anEvent'
+      ReplayEventBus.raise({event: {eventName: givenEventName, payload: {}}})
+      ReplayEventBus.discardPendingEvents({eventName: givenEventName})
+      expect(
+        ReplayEventBus.getNumberOfPendingEvents({eventName: givenEventName})
+      ).equal(0)
       done()
     })
     it('Should clear all observers and pending events for a specified eventName', done => {

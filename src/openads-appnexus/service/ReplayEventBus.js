@@ -11,7 +11,6 @@ class ReplayEventBus {
     const subscriptionId = generateUUID()
     const subscription = {
       id: subscriptionId,
-      active: true,
       observer
     }
     if (!eventName) {
@@ -30,14 +29,12 @@ class ReplayEventBus {
   }
 
   raise({event}) {
-    this._addPendingEvent({event})
-    if (this._subscriptions.has(event.eventName)) {
+    if (!this._subscriptions.has(event.eventName)) {
+      this._addPendingEvent({event})
+    } else {
       this._subscriptions
         .get(event.eventName)
-        .filter(subscription => subscription.active)
-        .forEach(activeSubscription =>
-          this._processEvent({event, subscription: activeSubscription})
-        )
+        .forEach(subscription => this._processEvent({event, subscription}))
     }
   }
 
@@ -86,6 +83,10 @@ class ReplayEventBus {
       }
     }
     return false
+  }
+
+  discardPendingEvents({eventName}) {
+    this._pendingEvents.delete(eventName)
   }
 
   getNumberOfRegisteredEvents() {

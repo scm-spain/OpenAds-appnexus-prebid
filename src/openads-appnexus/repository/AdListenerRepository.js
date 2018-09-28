@@ -23,10 +23,10 @@ export default class AdListenerRepository {
   save({id, adResponse}) {
     return Promise.all([
       this._ads.set(id, adResponse),
-      Promise.resolve(this._eventNameFromAdId({id})).then(eventId =>
+      Promise.resolve(this._eventNameFromAdId({id})).then(eventName =>
         ReplayEventBus.raise({
           event: {
-            eventName: eventId,
+            eventName,
             payload: adResponse
           }
         })
@@ -35,7 +35,10 @@ export default class AdListenerRepository {
   }
 
   remove({id}) {
-    return Promise.resolve().then(() => this._ads.delete(id))
+    return Promise.resolve(this._eventNameFromAdId({id})).then(eventName => {
+      ReplayEventBus.discardPendingEvents({eventName})
+      this._ads.delete(id)
+    })
   }
 
   _registerAdSubscription({id}) {
