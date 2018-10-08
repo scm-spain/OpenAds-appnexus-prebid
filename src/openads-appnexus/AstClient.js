@@ -5,7 +5,7 @@ export default class AstClient {
   /**
    * Activates or deactivates the Debug mode.
    */
-  debugMode ({enabled}) {
+  debugMode({enabled}) {
     throw new Error('AppNexusConnector#debugMode must be implemented')
   }
 
@@ -15,7 +15,7 @@ export default class AstClient {
    * @param targetId
    * @param callback
    */
-  onEvent ({event, targetId, callback}) {
+  onEvent({event, targetId, callback}) {
     throw new Error('AppNexusConnector#onEvent must be implemented')
   }
 
@@ -28,14 +28,14 @@ export default class AstClient {
    * @param keywords
    * @param native
    */
-  defineTag ({member, targetId, invCode, sizes, keywords, native}) {
+  defineTag({member, targetId, invCode, sizes, keywords, native}) {
     throw new Error('AppNexusConnector#defineTag must be implemented')
   }
 
   /**
    * Load tags.
    */
-  loadTags () {
+  loadTags() {
     throw new Error('AppNexusConnector#loadTags must be implemented')
   }
 
@@ -43,7 +43,7 @@ export default class AstClient {
    * Shows tags in the target.
    * @param targetId
    */
-  showTag ({targetId}) {
+  showTag({targetId}) {
     throw new Error('AppNexusConnector#showTag must be implemented')
   }
 
@@ -51,7 +51,7 @@ export default class AstClient {
    * Refreshes ads on the page.
    * @param targetsArray : an array of ids
    */
-  refresh (targetsArray) {
+  refresh(targetsArray) {
     throw new Error('AppNexusConnector#refresh must be implemented')
   }
 
@@ -65,7 +65,7 @@ export default class AstClient {
    * @param data.keywords
    * @param data.native
    */
-  modifyTag ({targetId, data}) {
+  modifyTag({targetId, data}) {
     throw new Error('AppNexusConnector#modifyTag must be implemented')
   }
 }
