@@ -1,6 +1,8 @@
 import {expect} from 'chai'
 import sinon from 'sinon'
 import AppNexusConnector from '../../openads-appnexus/AppNexusConnector'
+import Debouncer from '../../openads-appnexus/service/Debouncer'
+import {TIMEOUT_DEBOUNCE} from '../../openads-appnexus/timeout/timeout'
 
 describe('AppNexus Connector', function() {
   const createLoggerMock = () => ({
@@ -16,6 +18,14 @@ describe('AppNexus Connector', function() {
       refresh: () => mock,
       modifyTag: () => mock,
       debugMode: () => mock
+    }
+    return mock
+  }
+  const createPrebidClientMock = () => {
+    const mock = {
+      addAdUnits: () => mock,
+      requestBids: () => mock,
+      setTargetingForAst: () => mock
     }
     return mock
   }
@@ -85,6 +95,7 @@ describe('AppNexus Connector', function() {
         .catch(e => done(e))
     })
   })
+
   describe('loadAd method', () => {
     it('Should return a promise', () => {
       const appNexusConnector = new AppNexusConnector({
@@ -92,66 +103,320 @@ describe('AppNexus Connector', function() {
         logger: createLoggerMock(),
         astClient: createAstClientMock(),
         adRepository: createAdRepositoryMock(),
-        loggerProvider: createloggerProviderMock()
+        loggerProvider: createloggerProviderMock(),
+        prebidClient: createPrebidClientMock()
       })
       expect(appNexusConnector.loadAd({})).to.be.a('promise')
     })
-    it('Should define a tag, register callback events, load the tag and resolve with an Ad response if it is found in repository', done => {
+    it('should call loadtags without prebid information', done => {
       const astClientMock = createAstClientMock()
       const adRepositoryMock = createAdRepositoryMock({
         findResult: 'whatever'
       })
-      const defineTagSpy = sinon.spy(astClientMock, 'defineTag')
-      const onEventSpy = sinon.spy(astClientMock, 'onEvent')
-      const loadTagsSpy = sinon.spy(astClientMock, 'loadTags')
-      const findSpy = sinon.spy(adRepositoryMock, 'find')
+
       const appNexusConnector = new AppNexusConnector({
         member: 1000,
         logger: createLoggerMock(),
         astClient: astClientMock,
         adRepository: adRepositoryMock,
-        loggerProvider: createloggerProviderMock()
+        loggerProvider: createloggerProviderMock(),
+        prebidClient: createPrebidClientMock()
       })
-      const givenParameters = {
-        domElementId: 1,
+
+      const givenId = 1
+
+      const givenSpecification = {
+        source: 'appNexusPrebid',
+        appNexus: {
+          placement: 2,
+          sizes: [[3, 4]],
+          segmentation: {a: 5},
+          native: {b: 6}
+        }
+      }
+
+      const expectedDefineTagsArray = {
         placement: 2,
         sizes: [[3, 4]],
         segmentation: {a: 5},
         native: {b: 6}
       }
 
+      const removeSpy = sinon.spy(adRepositoryMock, 'remove')
+      const findSpy = sinon.spy(adRepositoryMock, 'find')
+
+      const defineTagSpy = sinon.spy(astClientMock, 'defineTag')
+      const onEventSpy = sinon.spy(astClientMock, 'onEvent')
+      const loadTagsSpy = sinon.spy(astClientMock, 'loadTags')
+
       appNexusConnector
-        .loadAd(givenParameters)
+        .loadAd({
+          id: givenId,
+          specification: givenSpecification
+        })
         .then(() => {
-          const expectedDefineTagParameters = {
-            member: appNexusConnector.member,
-            targetId: 1,
-            invCode: 2,
-            sizes: [[3, 4]],
-            keywords: {a: 5},
-            native: {b: 6}
-          }
-          expect(defineTagSpy.calledOnce, 'should have defined the tag').to.be
-            .true
-          expect(
-            defineTagSpy.args[0][0],
-            'should have defined the tag with valid parameters'
-          ).to.deep.equal(expectedDefineTagParameters)
-          expect(
-            onEventSpy.callCount,
-            'should have registered 5 events'
-          ).to.equal(5)
-          expect(loadTagsSpy.calledOnce, 'should have loaded the tag').to.be
-            .true
-          expect(
-            findSpy.calledOnce,
-            'should have found the Ad in the repository'
-          ).to.be.true
-          expect(
-            findSpy.args[0][0],
-            'should have found the Ad in the repository with valid parameters'
-          ).to.deep.equal({id: givenParameters.domElementId})
-          done()
+          setTimeout(() => {
+            expect(
+              removeSpy.calledOnce,
+              'should have found the Ad in the repository'
+            ).to.be.true
+            expect(
+              findSpy.calledOnce,
+              'should have found the Ad in the repository'
+            ).to.be.true
+            expect(defineTagSpy.calledOnce, 'should have defined the tag').to.be
+              .true
+            expect(
+              onEventSpy.callCount,
+              'should have registered 5 events'
+            ).to.equal(5)
+            expect(loadTagsSpy.calledOnce, 'should have loaded the tag').to.be
+              .true
+            expect(defineTagSpy.args[0][0]).to.deep.equal(
+              expectedDefineTagsArray
+            )
+            done()
+          }, 1500)
+        })
+        .catch(e => done(e))
+    })
+    it('should call loadtags without prebid information multiple ads', done => {
+      const astClientMock = createAstClientMock()
+      const adRepositoryMock = createAdRepositoryMock({
+        findResult: 'whatever'
+      })
+
+      const appNexusConnector = new AppNexusConnector({
+        member: 1000,
+        logger: createLoggerMock(),
+        astClient: astClientMock,
+        adRepository: adRepositoryMock,
+        loggerProvider: createloggerProviderMock(),
+        prebidClient: createPrebidClientMock()
+      })
+
+      const givenId = 1
+
+      const givenSpecification = {
+        source: 'appNexusPrebid',
+        appNexus: {
+          placement: 2,
+          sizes: [[3, 4]],
+          segmentation: {a: 5},
+          native: {b: 6}
+        }
+      }
+
+      const givenId2 = 1
+
+      const givenSpecification2 = {
+        source: 'appNexusPrebid',
+        appNexus: {
+          placement: 2,
+          sizes: [[3, 4]],
+          segmentation: {a: 5},
+          native: {b: 6}
+        }
+      }
+
+      const expectedDefineTagsArray = {
+        placement: 2,
+        sizes: [[3, 4]],
+        segmentation: {a: 5},
+        native: {b: 6}
+      }
+
+      const removeSpy = sinon.spy(adRepositoryMock, 'remove')
+      const findSpy = sinon.spy(adRepositoryMock, 'find')
+
+      const defineTagSpy = sinon.spy(astClientMock, 'defineTag')
+      const onEventSpy = sinon.spy(astClientMock, 'onEvent')
+      const loadTagsSpy = sinon.spy(astClientMock, 'loadTags')
+
+      appNexusConnector.loadAd({
+        id: givenId,
+        specification: givenSpecification
+      })
+      appNexusConnector
+        .loadAd({
+          id: givenId2,
+          specification: givenSpecification2
+        })
+        .then(() => {
+          setTimeout(() => {
+            expect(
+              removeSpy.calledTwice,
+              'should have found the Ad in the repository'
+            ).to.be.true
+            expect(
+              findSpy.calledTwice,
+              'should have found the Ad in the repository'
+            ).to.be.true
+            expect(defineTagSpy.calledTwice, 'should have defined the tag').to
+              .be.true
+            expect(
+              onEventSpy.callCount,
+              'should have registered 5 events'
+            ).to.equal(10)
+            expect(loadTagsSpy.calledOnce, 'should have loaded the tag').to.be
+              .true
+            expect(defineTagSpy.args[0][0]).to.deep.equal(
+              expectedDefineTagsArray
+            )
+            done()
+          }, 1500)
+        })
+        .catch(e => done(e))
+    })
+    it('should call load tags with prebid information', done => {
+      const astClientMock = createAstClientMock()
+      const prebidClientMock = createPrebidClientMock()
+      const adRepositoryMock = createAdRepositoryMock({
+        findResult: 'whatever'
+      })
+
+      const appNexusConnector = new AppNexusConnector({
+        member: 1000,
+        logger: createLoggerMock(),
+        astClient: astClientMock,
+        adRepository: adRepositoryMock,
+        loggerProvider: createloggerProviderMock(),
+        prebidClient: prebidClientMock
+      })
+
+      const givenId = 1
+
+      const givenSpecification = {
+        source: 'appNexusPrebid',
+        appNexus: {
+          placement: 2,
+          sizes: [[3, 4]],
+          segmentation: {a: 5},
+          native: {b: 6}
+        },
+        prebid: {
+          code: 1,
+          mediaTypes: [[3, 4]],
+          bids: [100, 101]
+        }
+      }
+
+      const addAdUnitsSpy = sinon.spy(prebidClientMock, 'addAdUnits')
+      const requestBidsSpy = sinon.spy(prebidClientMock, 'requestBids')
+
+      const expectedprebidUnitsArray = [
+        {
+          code: 1,
+          mediaTypes: [[3, 4]],
+          bids: [100, 101]
+        }
+      ]
+
+      appNexusConnector
+        .loadAd({
+          id: givenId,
+          specification: givenSpecification
+        })
+        .then(() => {
+          setTimeout(() => {
+            expect(addAdUnitsSpy.calledOnce).to.be.true
+
+            expect(requestBidsSpy.calledOnce).to.be.true
+
+            expect(addAdUnitsSpy.args[0][0]).to.deep.equal(
+              expectedprebidUnitsArray
+            )
+            done()
+          }, 1500)
+        })
+        .catch(e => done(e))
+    })
+    it('should call load tags with prebid information multiple ads', done => {
+      const astClientMock = createAstClientMock()
+      const prebidClientMock = createPrebidClientMock()
+      const adRepositoryMock = createAdRepositoryMock({
+        findResult: 'whatever'
+      })
+
+      const appNexusConnector = new AppNexusConnector({
+        member: 1000,
+        logger: createLoggerMock(),
+        astClient: astClientMock,
+        adRepository: adRepositoryMock,
+        loggerProvider: createloggerProviderMock(),
+        prebidClient: prebidClientMock
+      })
+
+      const givenId = 1
+
+      const givenSpecification = {
+        source: 'appNexusPrebid',
+        appNexus: {
+          placement: 2,
+          sizes: [[3, 4]],
+          segmentation: {a: 5},
+          native: {b: 6}
+        },
+        prebid: {
+          code: 1,
+          mediaTypes: [[3, 4]],
+          bids: [100, 101]
+        }
+      }
+
+      const givenId2 = 1
+
+      const givenSpecification2 = {
+        source: 'appNexusPrebid',
+        appNexus: {
+          placement: 2,
+          sizes: [[3, 4]],
+          segmentation: {a: 5},
+          native: {b: 6}
+        },
+        prebid: {
+          code: 1,
+          mediaTypes: [[3, 4]],
+          bids: [100, 101]
+        }
+      }
+
+      const addAdUnitsSpy = sinon.spy(prebidClientMock, 'addAdUnits')
+      const requestBidsSpy = sinon.spy(prebidClientMock, 'requestBids')
+
+      const expectedprebidUnitsArray = [
+        {
+          code: 1,
+          mediaTypes: [[3, 4]],
+          bids: [100, 101]
+        },
+        {
+          code: 1,
+          mediaTypes: [[3, 4]],
+          bids: [100, 101]
+        }
+      ]
+
+      appNexusConnector.loadAd({
+        id: givenId,
+        specification: givenSpecification
+      })
+      appNexusConnector
+        .loadAd({
+          id: givenId2,
+          specification: givenSpecification2
+        })
+        .then(() => {
+          setTimeout(() => {
+            expect(addAdUnitsSpy.calledOnce).to.be.true
+
+            expect(requestBidsSpy.calledOnce).to.be.true
+
+            expect(addAdUnitsSpy.args[0][0]).to.deep.equal(
+              expectedprebidUnitsArray
+            )
+            done()
+          }, 1500)
         })
         .catch(e => done(e))
     })
@@ -167,15 +432,27 @@ describe('AppNexus Connector', function() {
         adRepository: adRepositoryMock,
         loggerProvider: createloggerProviderMock()
       })
-      const givenParameters = {
-        domElementId: 1,
-        placement: 2,
-        sizes: [[3, 4]],
-        segmentation: {a: 5},
-        native: {b: 6}
+      const givenId = 1
+
+      const givenSpecification = {
+        source: 'appNexusPrebid',
+        appNexus: {
+          placement: 2,
+          sizes: [[3, 4]],
+          segmentation: {a: 5},
+          native: {b: 6}
+        },
+        prebid: {
+          code: 1,
+          mediaTypes: [[3, 4]],
+          bids: [100, 101]
+        }
       }
       appNexusConnector
-        .loadAd(givenParameters)
+        .loadAd({
+          id: givenId,
+          specification: givenSpecification
+        })
         .then(() => {
           done(new Error('should have rejected'))
         })
@@ -187,7 +464,7 @@ describe('AppNexus Connector', function() {
           expect(
             findSpy.args[0][0],
             'should have found the Ad in the repository with valid parameters'
-          ).to.deep.equal({id: givenParameters.domElementId})
+          ).to.deep.equal({id: givenId})
           done()
         })
         .catch(e => done(e))
@@ -347,3 +624,79 @@ describe('AppNexus Connector', function() {
     })
   })
 })
+
+// it('should call load tags with prebid information', done => {
+//   // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//   const astClientMock = createAstClientMock()
+//   const prebidClientMock = createPrebidClientMock()
+//   const adRepositoryMock = createAdRepositoryMock({
+//     findResult: 'whatever'
+//   })
+//
+//   const appNexusConnector = new AppNexusConnector({
+//     member: 1000,
+//     logger: createLoggerMock(),
+//     astClient: astClientMock,
+//     adRepository: adRepositoryMock,
+//     loggerProvider: createloggerProviderMock(),
+//     prebidClient: prebidClientMock
+//   })
+//
+//   const givenId = 1
+//
+//   const givenSpecification = {
+//     source: 'appNexusPrebid',
+//     appNexus: {
+//       placement: 2,
+//       sizes: [[3, 4]],
+//       segmentation: {a: 5},
+//       native: {b: 6}
+//     },
+//     prebid: {
+//       code: 1,
+//       mediaTypes: [[3, 4]],
+//       bids: [100, 101]
+//     }
+//   }
+//
+//   const loadTagsSpy = sinon.spy(astClientMock, 'loadTags')
+//
+//   const addAdUnitsSpy = sinon.spy(prebidClientMock, 'addAdUnits')
+//   const requestBidsSpy = sinon.spy(prebidClientMock, 'requestBids')
+//   const setTargetingForAstSpy = sinon.spy(
+//     prebidClientMock,
+//     'setTargetingForAst'
+//   )
+//
+//   const expectedprebidUnitsArray = [
+//     {
+//       code: 1,
+//       mediaTypes: [[3, 4]],
+//       bids: [100, 101]
+//     }
+//   ]
+//
+//   appNexusConnector
+//     .loadAd({
+//       id: givenId,
+//       specification: givenSpecification
+//     })
+//     .then(() => {
+//       setTimeout(() => {
+//         // expect(loadTagsSpy.calledOnce, 'should have loaded the tag').to.be
+//         //   .true
+//
+//         expect(addAdUnitsSpy.calledOnce).to.be.true
+//
+//         expect(requestBidsSpy.calledOnce).to.be.true
+//
+//         // expect(setTargetingForAstSpy.calledOnce).to.be.true
+//
+//         expect(addAdUnitsSpy.args[0][0]).to.deep.equal(
+//           expectedprebidUnitsArray
+//         )
+//
+//         done()
+//       }, 1800)
+//     })
+// }) // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

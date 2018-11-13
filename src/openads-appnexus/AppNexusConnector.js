@@ -6,6 +6,10 @@ import {
   AD_REQUEST_FAILURE
 } from './event/events'
 
+import {TIMEOUT_DEBOUNCE, TIMEOUT_PREBID} from './timeout/timeout'
+import Debouncer from './service/debouncer'
+import bidsBackHandlerCallback from './bidsBackHandlerCallback'
+
 /**
  * @class
  * @implements {AdLoadable}
@@ -13,96 +17,143 @@ import {
  * @implements {Logger}
  */
 export default class AppNexusConnector {
-  constructor({member, logger, astClient, adRepository, loggerProvider}) {
+  constructor({
+    member,
+    logger,
+    astClient,
+    adRepository,
+    loggerProvider,
+    prebidClient
+  }) {
     this._member = member
     this._logger = logger
     this._astClient = astClient
     this._adRepository = adRepository
     this._loggerProvider = loggerProvider
+    this._prebidClient = prebidClient
+    this._loadAdDebouncer = new Debouncer({
+      onDebounce: this._onLoadAdDebounce.bind(this),
+      debounceTimeout: TIMEOUT_DEBOUNCE
+    })
   }
 
   get member() {
     return this._member
   }
 
-  display({domElementId}) {
+  loadAd({id, specification}) {
+    // noinspection JSAnnotator
     return Promise.resolve()
-      .then(() => this._astClient.showTag({targetId: domElementId}))
+      .then(() => this._adRepository.remove({id: id}))
+      .then(() => this._loadAdDebouncer.debounce({input: {id, specification}}))
+      .then(() => this._adRepository.find({id: id}))
+  }
+
+  display({id}) {
+    return Promise.resolve()
+      .then(() => this._astClient.showTag({targetId: id}))
       .then(null)
   }
 
-  loadAd({domElementId, placement, sizes, segmentation, native}) {
+  /**
+   * @param {object} inputArray
+   * @returns {Promise<{appnexusInputsArray: Array, prebidUnitsArray: Array} | never | void>}
+   * @private
+   */
+  _onLoadAdDebounce(inputArray) {
     return Promise.resolve()
-      .then(() => this._adRepository.remove({id: domElementId}))
-      .then(() =>
-        this._astClient.defineTag({
-          member: this._member,
-          targetId: domElementId,
-          invCode: placement,
-          sizes: sizes,
-          keywords: segmentation,
-          native: native
-        })
-      )
-      .then(astClient =>
-        astClient.onEvent({
-          event: AD_AVAILABLE,
-          targetId: domElementId,
-          callback: consumer(this._adRepository)(domElementId)(AD_AVAILABLE)
-        })
-      )
-      .then(astClient =>
-        astClient.onEvent({
-          event: AD_BAD_REQUEST,
-          targetId: domElementId,
-          callback: consumer(this._adRepository)(domElementId)(AD_BAD_REQUEST)
-        })
-      )
-      .then(astClient =>
-        astClient.onEvent({
-          event: AD_ERROR,
-          targetId: domElementId,
-          callback: consumer(this._adRepository)(domElementId)(AD_ERROR)
-        })
-      )
-      .then(astClient =>
-        astClient.onEvent({
-          event: AD_NO_BID,
-          targetId: domElementId,
-          callback: consumer(this._adRepository)(domElementId)(AD_NO_BID)
-        })
-      )
-      .then(astClient =>
-        astClient.onEvent({
-          event: AD_REQUEST_FAILURE,
-          targetId: domElementId,
-          callback: consumer(this._adRepository)(domElementId)(
-            AD_REQUEST_FAILURE
-          )
-        })
-      )
-      .then(astClient => astClient.loadTags())
-      .then(() => this._adRepository.find({id: domElementId}))
+      .then(() => this._arrayBuilder({array: inputArray}))
+      .then(inputArrays => {
+        inputArrays.appnexusInputsArray.forEach(input =>
+          this._defineAppNexusTag({id: input.id, tag: input.tag})
+        )
+        if (inputArrays.prebidUnitsArray.length > 0) {
+          this._prebidClient.addAdUnits(inputArrays.prebidUnitsArray)
+          this._prebidClient.requestBids({
+            bidsBackHandler: bidsBackHandlerCallback,
+            timeout: TIMEOUT_PREBID
+          })
+        } else {
+          this._astClient.loadTags()
+        }
+      })
+      .catch(error => console.log(error))
   }
 
-  refresh({domElementId, placement, sizes, segmentation, native}) {
+  _arrayBuilder({array}) {
+    const formattedArray = {
+      appnexusInputsArray: [],
+      prebidUnitsArray: []
+    }
+
+    formattedArray.appnexusInputsArray = array.map(ad => ({
+      id: ad.id,
+      tag: ad.specification.appNexus
+    }))
+
+    formattedArray.prebidUnitsArray = array
+      .filter(ad => ad.specification.prebid)
+      .map(ad => ad.specification.prebid)
+
+    return formattedArray
+  }
+
+  _defineAppNexusTag({id, tag}) {
+    this._astClient.defineTag(tag)
+    this._astClient.onEvent({
+      event: AD_AVAILABLE,
+      targetId: id,
+      callback: consumer(this._adRepository)(id)(AD_AVAILABLE)
+    })
+    this._astClient.onEvent({
+      event: AD_BAD_REQUEST,
+      targetId: id,
+      callback: consumer(this._adRepository)(id)(AD_BAD_REQUEST)
+    })
+    this._astClient.onEvent({
+      event: AD_ERROR,
+      targetId: id,
+      callback: consumer(this._adRepository)(id)(AD_ERROR)
+    })
+    this._astClient.onEvent({
+      event: AD_NO_BID,
+      targetId: id,
+      callback: consumer(this._adRepository)(id)(AD_NO_BID)
+    })
+    this._astClient.onEvent({
+      event: AD_REQUEST_FAILURE,
+      targetId: id,
+      callback: consumer(this._adRepository)(id)(AD_REQUEST_FAILURE)
+    })
+  }
+
+  refresh({id, specification}) {
     return Promise.resolve()
-      .then(() => this._adRepository.remove({id: domElementId}))
+      .then(() => this._adRepository.remove({id: id}))
       .then(() => {
-        let updateData = (placement || sizes || segmentation || native) && {}
+        let updateData =
+          (specification.appnexus.placement ||
+            specification.appnexus.sizes ||
+            specification.appnexus.segmentation ||
+            specification.appnexus.native) &&
+          {}
         if (updateData) {
-          if (placement) updateData.invCode = placement
-          if (sizes) updateData.sizes = sizes
-          if (segmentation) updateData.keywords = segmentation
-          if (native) updateData.native = native
+          if (specification.appnexus.placement)
+            updateData.invCode = specification.appnexus.placement
+          if (specification.appnexus.sizes)
+            updateData.sizes = specification.appnexus.sizes
+          if (specification.appnexus.segmentation)
+            updateData.keywords = specification.appnexus.segmentation
+          if (specification.appnexus.native)
+            updateData.native = specification.appnexus.native
           this._astClient.modifyTag({
-            targetId: domElementId,
+            targetId: id,
             data: updateData
           })
         }
       })
-      .then(() => this._astClient.refresh([domElementId]))
-      .then(() => this._adRepository.find({id: domElementId}))
+      .then(() => this._astClient.refresh([id]))
+      .then(() => this._adRepository.find({id: id}))
   }
 
   enableDebug({debug}) {

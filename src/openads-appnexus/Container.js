@@ -4,6 +4,7 @@ import AppNexusConnector from './AppNexusConnector'
 import AstClientImpl from './AstClientImpl'
 import ApnTagWrapper from './ApnTagWrapper'
 import AdListenerRepository from './repository/AdListenerRepository'
+import PrebidClientImpl from './PrebidClientImpl'
 
 export default class Container {
   constructor({config} = {}) {
@@ -28,7 +29,8 @@ export default class Container {
       loggerProvider: this.getInstance({key: 'LogProvider'}),
       logger: this.getInstance({key: 'Logger'}),
       astClient: this.getInstance({key: 'AstClient'}),
-      adRepository: this.getInstance({key: 'AdRepository'})
+      adRepository: this.getInstance({key: 'AdRepository'}),
+      prebidClient: this.getInstance(({key: 'PrebidClient'}))
     })
   }
 
@@ -61,5 +63,15 @@ export default class Container {
 
   _buildApnTag() {
     return ApnTagWrapper.build()
+  }
+
+  _buildPrebidClient() {
+    return new PrebidClientImpl({
+      pbjs: this.getInstance({key: 'pbjs'})
+    })
+  }
+
+  _buildPbjs() {
+    return // Instance from the outside
   }
 }
