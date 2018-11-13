@@ -8,7 +8,6 @@ import {
 
 import {TIMEOUT_DEBOUNCE, TIMEOUT_PREBID} from './timeout/timeout'
 import Debouncer from './service/debouncer'
-import bidsBackHandlerCallback from './bidsBackHandlerCallback'
 
 /**
  * @class
@@ -18,27 +17,34 @@ import bidsBackHandlerCallback from './bidsBackHandlerCallback'
  */
 export default class AppNexusConnector {
   constructor({
-    member,
+    pageOpts,
     logger,
     astClient,
     adRepository,
     loggerProvider,
     prebidClient
   }) {
-    this._member = member
     this._logger = logger
     this._astClient = astClient
     this._adRepository = adRepository
     this._loggerProvider = loggerProvider
     this._prebidClient = prebidClient
+    this._pageOpts = pageOpts
+    if (this._pageOpts) {
+      this._astClient.setPageOpts(this._pageOpts)
+    }
     this._loadAdDebouncer = new Debouncer({
       onDebounce: this._onLoadAdDebounce.bind(this),
       debounceTimeout: TIMEOUT_DEBOUNCE
     })
+    this._refreshDebouncer = new Debouncer({
+      onDebounce: this._onRefreshDebounce.bind(this),
+      debounceTimeout: TIMEOUT_DEBOUNCE
+    })
   }
 
-  get member() {
-    return this._member
+  get pageOpts() {
+    return this._pageOpts
   }
 
   loadAd({id, specification}) {
@@ -55,23 +61,34 @@ export default class AppNexusConnector {
       .then(null)
   }
 
+  refresh({id, specification}) {
+    return Promise.resolve()
+      .then(() => this._adRepository.remove({id: id}))
+      .then(() => this._refreshDebouncer.debounce({input: {id, specification}}))
+      .then(() => this._adRepository.find({id: id}))
+  }
+
   /**
    * @param {object} inputArray
    * @returns {Promise<{appnexusInputsArray: Array, prebidUnitsArray: Array} | never | void>}
    * @private
    */
-  _onLoadAdDebounce(inputArray) {
-    return Promise.resolve()
-      .then(() => this._arrayBuilder({array: inputArray}))
-      .then(inputArrays => {
-        inputArrays.appnexusInputsArray.forEach(input =>
-          this._defineAppNexusTag({id: input.id, tag: input.tag})
+  _onLoadAdDebounce(loadAdInputs) {
+    return Promise.resolve(loadAdInputs)
+      .then(this._buildNormalizedInputs)
+      .then(normalizedInputs => {
+        normalizedInputs.tags.forEach(input =>
+          this._defineAppNexusTag({id: input.id, tag: input.data})
         )
-        if (inputArrays.prebidUnitsArray.length > 0) {
-          this._prebidClient.addAdUnits(inputArrays.prebidUnitsArray)
+        if (normalizedInputs.prebid.length > 0) {
+          this._prebidClient.addAdUnits(normalizedInputs.adUnits)
           this._prebidClient.requestBids({
-            bidsBackHandler: bidsBackHandlerCallback,
-            timeout: TIMEOUT_PREBID
+            timeout: TIMEOUT_PREBID,
+            bidsBackHandler: () =>
+              this._astClient.push(() => {
+                this._prebidClient.setTargetingForAst()
+                this._astClient.loadTags()
+              })
           })
         } else {
           this._astClient.loadTags()
@@ -80,20 +97,46 @@ export default class AppNexusConnector {
       .catch(error => console.log(error))
   }
 
-  _arrayBuilder({array}) {
+  _onRefreshDebounce(refreshInputs) {
+    return Promise.resolve(refreshInputs)
+      .then(this._buildNormalizedInputs)
+      .then(normalizedInputs => {
+        normalizedInputs.tags.forEach(tag =>
+          this._astClient.modifyTag({
+            targetId: tag.targetId,
+            data: tag.data
+          })
+        )
+        if (normalizedInputs.adUnits.length > 0) {
+          this._prebidClient.requestBids({
+            adUnits: normalizedInputs.adUnits,
+            timeout: TIMEOUT_PREBID,
+            bidsBackHandler: () =>
+              this._astClient.push(() => {
+                this._prebidClient.setTargetingForAst()
+                this._astClient.refresh(normalizedInputs.map(input => input.id))
+              })
+          })
+        } else {
+          this._astClient.refresh(normalizedInputs.map(input => input.id))
+        }
+      })
+  }
+
+  _buildNormalizedInputs(inputs) {
     const formattedArray = {
-      appnexusInputsArray: [],
-      prebidUnitsArray: []
+      tags: [],
+      adUnits: []
     }
 
-    formattedArray.appnexusInputsArray = array.map(ad => ({
-      id: ad.id,
-      tag: ad.specification.appNexus
+    formattedArray.tags = inputs.map(input => ({
+      id: input.id,
+      data: input.specification.appnexus
     }))
 
-    formattedArray.prebidUnitsArray = array
-      .filter(ad => ad.specification.prebid)
-      .map(ad => ad.specification.prebid)
+    formattedArray.adUnits = inputs
+      .filter(maybePrebidInput => maybePrebidInput.specification.prebid)
+      .map(prebidInput => prebidInput.specification.prebid)
 
     return formattedArray
   }
@@ -125,35 +168,6 @@ export default class AppNexusConnector {
       targetId: id,
       callback: consumer(this._adRepository)(id)(AD_REQUEST_FAILURE)
     })
-  }
-
-  refresh({id, specification}) {
-    return Promise.resolve()
-      .then(() => this._adRepository.remove({id: id}))
-      .then(() => {
-        let updateData =
-          (specification.appnexus.placement ||
-            specification.appnexus.sizes ||
-            specification.appnexus.segmentation ||
-            specification.appnexus.native) &&
-          {}
-        if (updateData) {
-          if (specification.appnexus.placement)
-            updateData.invCode = specification.appnexus.placement
-          if (specification.appnexus.sizes)
-            updateData.sizes = specification.appnexus.sizes
-          if (specification.appnexus.segmentation)
-            updateData.keywords = specification.appnexus.segmentation
-          if (specification.appnexus.native)
-            updateData.native = specification.appnexus.native
-          this._astClient.modifyTag({
-            targetId: id,
-            data: updateData
-          })
-        }
-      })
-      .then(() => this._astClient.refresh([id]))
-      .then(() => this._adRepository.find({id: id}))
   }
 
   enableDebug({debug}) {

@@ -1,8 +1,8 @@
 import {expect} from 'chai'
 import sinon from 'sinon'
 import AppNexusConnector from '../../openads-appnexus/AppNexusConnector'
-import Debouncer from '../../openads-appnexus/service/Debouncer'
-import {TIMEOUT_DEBOUNCE} from '../../openads-appnexus/timeout/timeout'
+import PrebidClientImpl from '../../openads-appnexus/PrebidClientImpl'
+import AstClientImpl from '../../openads-appnexus/AstClientImpl'
 
 describe('AppNexus Connector', function() {
   const createLoggerMock = () => ({
@@ -11,6 +11,7 @@ describe('AppNexus Connector', function() {
   })
   const createAstClientMock = () => {
     const mock = {
+      setPageOpts: () => mock,
       onEvent: () => mock,
       defineTag: () => mock,
       loadTags: () => mock,
@@ -35,6 +36,76 @@ describe('AppNexus Connector', function() {
   })
   const createloggerProviderMock = () => ({
     debugMode: () => null
+  })
+  describe('refresh method', () => {
+    it('Should refresh an Ad', done => {
+      const givenId = 'ad1'
+      const givenSpecification = {
+        appnexus: {
+          targetId: givenId,
+          invCode: 'inv-code1'
+        },
+        prebid: {
+          code: givenId,
+          mediaTypes: {
+            banner: {
+              sizes: [[970, 90]]
+            }
+          },
+          bids: [
+            {
+              bidder: 'rubicon',
+              params: {
+                accountId: '1111',
+                siteId: '2222',
+                zoneId: '3333'
+              }
+            }
+          ]
+        }
+      }
+
+      const expectedAd = {
+        data: {
+          id: givenId
+        }
+      }
+
+      const prebidClientMock = {
+        requestBids: () => null
+      }
+      const astClientMock = {
+        setPageOpts: () => null,
+        modifyTag: () => null,
+        refresh: () => null
+      }
+      const adRepositoryMock = {
+        remove: () => Promise.resolve(),
+        find: () => Promise.resolve(expectedAd)
+      }
+
+      const refreshSpy = sinon.spy(astClientMock, 'refresh')
+
+      const appNexusConnector = new AppNexusConnector({
+        pageOpts: {
+          member: 1000
+        },
+        logger: createLoggerMock(),
+        astClient: astClientMock,
+        prebidClient: prebidClientMock,
+        adRepository: adRepositoryMock,
+        loggerProvider: createloggerProviderMock()
+      })
+
+      appNexusConnector
+        .refresh({id: givenId, specification: givenSpecification})
+        .then(ad => {
+          expect(ad).to.deep.equal(expectedAd)
+          expect(refreshSpy.calledOnce, 'ast refresh should be called one time').to.be.true
+          done()
+        })
+        .catch(e => done(e))
+    })
   })
   describe('enableDebug method', () => {
     it('Should call the logger provider with the received value', () => {
