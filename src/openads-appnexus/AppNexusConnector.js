@@ -114,11 +114,11 @@ export default class AppNexusConnector {
             bidsBackHandler: () =>
               this._astClient.push(() => {
                 this._prebidClient.setTargetingForAst()
-                this._astClient.refresh(normalizedInputs.map(input => input.id))
+                this._astClient.refresh(normalizedInputs.tags.map(input => input.id))
               })
           })
         } else {
-          this._astClient.refresh(normalizedInputs.map(input => input.id))
+          this._astClient.refresh(normalizedInputs.tags.map(input => input.id))
         }
       })
   }

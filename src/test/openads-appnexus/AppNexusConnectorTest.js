@@ -3,8 +3,16 @@ import sinon from 'sinon'
 import AppNexusConnector from '../../openads-appnexus/AppNexusConnector'
 import PrebidClientImpl from '../../openads-appnexus/PrebidClientImpl'
 import AstClientImpl from '../../openads-appnexus/AstClientImpl'
+import {TIMEOUT_DEBOUNCE} from "../../openads-appnexus/timeout/timeout";
 
 describe('AppNexus Connector', function() {
+  const waitForDebounce = ({delta = 5} = {}) => new Promise((resolve, reject) => {
+    const timeoutId = setTimeout(() => {
+      clearTimeout(timeoutId)
+      resolve()
+    }, TIMEOUT_DEBOUNCE + delta
+    )
+  })
   const createLoggerMock = () => ({
     error: () => null,
     debug: () => null
@@ -72,18 +80,21 @@ describe('AppNexus Connector', function() {
       }
 
       const prebidClientMock = {
-        requestBids: () => null
+        requestBids: ({bidsBackHandler}) => bidsBackHandler(),
+        setTargetingForAst: () => null
       }
       const astClientMock = {
+        push: f => f(),
         setPageOpts: () => null,
         modifyTag: () => null,
         refresh: () => null
       }
       const adRepositoryMock = {
         remove: () => Promise.resolve(),
-        find: () => Promise.resolve(expectedAd)
+        find: () => waitForDebounce().then(() => expectedAd)
       }
 
+      const removeSpy = sinon.spy(adRepositoryMock, 'remove')
       const refreshSpy = sinon.spy(astClientMock, 'refresh')
 
       const appNexusConnector = new AppNexusConnector({
@@ -100,8 +111,13 @@ describe('AppNexus Connector', function() {
       appNexusConnector
         .refresh({id: givenId, specification: givenSpecification})
         .then(ad => {
-          expect(ad).to.deep.equal(expectedAd)
+
+          expect(removeSpy.calledOnce, 'should remove an old Ad remaining in the repository')
+          expect(removeSpy.args[0][0].id, 'should remove the Ad id from the repository').to.equal(givenId)
+
           expect(refreshSpy.calledOnce, 'ast refresh should be called one time').to.be.true
+
+          expect(ad).to.deep.equal(expectedAd)
           done()
         })
         .catch(e => done(e))
