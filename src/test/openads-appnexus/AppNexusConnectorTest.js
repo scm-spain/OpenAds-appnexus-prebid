@@ -11,38 +11,38 @@ describe('AppNexus Connector', function() {
         resolve()
       }, TIMEOUT_DEBOUNCE + delta)
     })
-    const makeAgiven = (n, appnexusOnly) => {
-        const given = {
-            id: 'ad' + n,
-            specification: {
-                appnexus: {
-                    targetId: 'ad' + n,
-                    invCode: 'inv-code' + n
-                },
-            }
+  const makeAgiven = (n, appnexusOnly) => {
+    const given = {
+      id: 'ad' + n,
+      specification: {
+        appnexus: {
+          targetId: 'ad' + n,
+          invCode: 'inv-code' + n
         }
-        if (!appnexusOnly) {
-          given.specification.prebid = {
-                code: 'ad' + n,
-                    mediaTypes: {
-                    banner: {
-                        sizes: [[970, 90]]
-                    }
-                },
-                bids: [
-                    {
-                        bidder: 'rubicon',
-                        params: {
-                            accountId: '1111',
-                            siteId: '2222',
-                            zoneId: '3333'
-                        }
-                    }
-                ]
-            }
-        }
-        return given
+      }
     }
+    if (!appnexusOnly) {
+      given.specification.prebid = {
+        code: 'ad' + n,
+        mediaTypes: {
+          banner: {
+            sizes: [[970, 90]]
+          }
+        },
+        bids: [
+          {
+            bidder: 'rubicon',
+            params: {
+              accountId: '1111',
+              siteId: '2222',
+              zoneId: '3333'
+            }
+          }
+        ]
+      }
+    }
+    return given
+  }
   const createLoggerMock = () => ({
     error: () => null,
     debug: () => null
@@ -77,22 +77,29 @@ describe('AppNexus Connector', function() {
   })
   describe('constructor', () => {
     it('should call the setPageOpts if options are given', done => {
-        const givenPageOpts = {
-          member: 1000
-        }
-        const astClientMock = createAstClientMock()
-        const setPageOptsSpy = sinon.spy(astClientMock, 'setPageOpts')
-        Promise.resolve()
-            .then(() => new AppNexusConnector({
-                pageOpts: givenPageOpts,
-                astClient: astClientMock
-            }))
-            .then(() => {
-              expect(setPageOptsSpy.called, 'setPageOpts should be called').to.be.true
-              expect(setPageOptsSpy.args[0][0], 'setPageOpts should receive the pageOpts').to.deep.equal(givenPageOpts)
-              done()
+      const givenPageOpts = {
+        member: 1000
+      }
+      const astClientMock = createAstClientMock()
+      const setPageOptsSpy = sinon.spy(astClientMock, 'setPageOpts')
+      Promise.resolve()
+        .then(
+          () =>
+            new AppNexusConnector({
+              pageOpts: givenPageOpts,
+              astClient: astClientMock
             })
-            .catch(e => done(e))
+        )
+        .then(() => {
+          expect(setPageOptsSpy.called, 'setPageOpts should be called').to.be
+            .true
+          expect(
+            setPageOptsSpy.args[0][0],
+            'setPageOpts should receive the pageOpts'
+          ).to.deep.equal(givenPageOpts)
+          done()
+        })
+        .catch(e => done(e))
     })
   })
   describe('refresh method', () => {
@@ -275,72 +282,73 @@ describe('AppNexus Connector', function() {
         })
         .catch(e => done(e))
     })
-      it('Should not call to prebid methods if no prebid is set', done => {
-          const givenAd1 = makeAgiven(1, true)
+    it('Should not call to prebid methods if no prebid is set', done => {
+      const givenAd1 = makeAgiven(1, true)
 
-          const prebidClientMock = {
-              requestBids: ({bidsBackHandler}) => bidsBackHandler(),
-              setTargetingForAst: () => null
-          }
-          const astClientMock = {
-              push: f => f(),
-              setPageOpts: () => null,
-              modifyTag: () => null,
-              refresh: () => null
-          }
-          const adRepositoryMock = {
-              remove: () => Promise.resolve(),
-              find: () => waitForDebounce()
-          }
+      const prebidClientMock = {
+        requestBids: ({bidsBackHandler}) => bidsBackHandler(),
+        setTargetingForAst: () => null
+      }
+      const astClientMock = {
+        push: f => f(),
+        setPageOpts: () => null,
+        modifyTag: () => null,
+        refresh: () => null
+      }
+      const adRepositoryMock = {
+        remove: () => Promise.resolve(),
+        find: () => waitForDebounce()
+      }
 
-          const removeSpy = sinon.spy(adRepositoryMock, 'remove')
-          const modifyTagSpy = sinon.spy(astClientMock, 'modifyTag')
-          const refreshSpy = sinon.spy(astClientMock, 'refresh')
+      const removeSpy = sinon.spy(adRepositoryMock, 'remove')
+      const modifyTagSpy = sinon.spy(astClientMock, 'modifyTag')
+      const refreshSpy = sinon.spy(astClientMock, 'refresh')
 
-          const requestBidsSpy = sinon.spy(prebidClientMock, 'requestBids')
-          const setTargetingForAstSpy = sinon.spy(
-              prebidClientMock,
-              'setTargetingForAst'
-          )
+      const requestBidsSpy = sinon.spy(prebidClientMock, 'requestBids')
+      const setTargetingForAstSpy = sinon.spy(
+        prebidClientMock,
+        'setTargetingForAst'
+      )
 
-          const appNexusConnector = new AppNexusConnector({
-              pageOpts: {
-                  member: 1000
-              },
-              logger: createLoggerMock(),
-              astClient: astClientMock,
-              prebidClient: prebidClientMock,
-              adRepository: adRepositoryMock,
-              loggerProvider: createloggerProviderMock()
-          })
-
-          appNexusConnector.refresh(givenAd1)
-              .then(() => {
-                  expect(
-                      removeSpy.callCount,
-                      'the Ad repository should have received 1 remove calls'
-                  ).to.equal(1)
-                  expect(
-                      modifyTagSpy.callCount,
-                      'the ast client should have recevied 3 modifyTag calls'
-                  ).to.equal(1)
-                  expect(
-                      setTargetingForAstSpy.called,
-                      'the prebid client should not recevie any setTargetingForAst call'
-                  ).to.be.false
-                  expect(
-                      requestBidsSpy.called,
-                      'the prebid client should not recevie any requestBids call'
-                  ).to.be.false
-                  expect(
-                      refreshSpy.callCount,
-                      'the ast client should have recevied 1 refresh call'
-                  ).to.equal(1)
-
-                  done()
-              })
-              .catch(e => done(e))
+      const appNexusConnector = new AppNexusConnector({
+        pageOpts: {
+          member: 1000
+        },
+        logger: createLoggerMock(),
+        astClient: astClientMock,
+        prebidClient: prebidClientMock,
+        adRepository: adRepositoryMock,
+        loggerProvider: createloggerProviderMock()
       })
+
+      appNexusConnector
+        .refresh(givenAd1)
+        .then(() => {
+          expect(
+            removeSpy.callCount,
+            'the Ad repository should have received 1 remove calls'
+          ).to.equal(1)
+          expect(
+            modifyTagSpy.callCount,
+            'the ast client should have recevied 3 modifyTag calls'
+          ).to.equal(1)
+          expect(
+            setTargetingForAstSpy.called,
+            'the prebid client should not recevie any setTargetingForAst call'
+          ).to.be.false
+          expect(
+            requestBidsSpy.called,
+            'the prebid client should not recevie any requestBids call'
+          ).to.be.false
+          expect(
+            refreshSpy.callCount,
+            'the ast client should have recevied 1 refresh call'
+          ).to.equal(1)
+
+          done()
+        })
+        .catch(e => done(e))
+    })
   })
   describe('enableDebug method', () => {
     it('Should call the logger provider with the received value', () => {
