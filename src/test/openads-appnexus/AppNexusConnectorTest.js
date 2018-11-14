@@ -95,7 +95,11 @@ describe('AppNexus Connector', function() {
       }
 
       const removeSpy = sinon.spy(adRepositoryMock, 'remove')
+      const modifyTagSpy = sinon.spy(astClientMock, 'modifyTag')
       const refreshSpy = sinon.spy(astClientMock, 'refresh')
+
+      const requestBidsSpy = sinon.spy(prebidClientMock, 'requestBids')
+      const setTargetingForAstSpy = sinon.spy(prebidClientMock, 'setTargetingForAst')
 
       const appNexusConnector = new AppNexusConnector({
         pageOpts: {
@@ -115,7 +119,20 @@ describe('AppNexus Connector', function() {
           expect(removeSpy.calledOnce, 'should remove an old Ad remaining in the repository')
           expect(removeSpy.args[0][0].id, 'should remove the Ad id from the repository').to.equal(givenId)
 
+
+          expect(modifyTagSpy.calledOnce, 'ast modifyTag should be called one time').to.be.true
+          expect(modifyTagSpy.args[0][0], 'ast modifyTag should be with the update data').to.deep.equal({
+              targetId: givenId,
+              data: givenSpecification.appnexus
+          })
+
           expect(refreshSpy.calledOnce, 'ast refresh should be called one time').to.be.true
+          expect(refreshSpy.args[0][0], 'ast refresh should be called with an array of ids').to.deep.equal([givenId])
+
+          expect(requestBidsSpy.calledOnce, 'prebid should request bids').to.be.true
+          expect(requestBidsSpy.args[0][0].adUnits, 'prebid should request bids for an array of given ad units').to.deep.equal([givenSpecification.prebid])
+
+          expect(setTargetingForAstSpy.calledOnce, 'prebid should set AST targeting').to.be.true
 
           expect(ad).to.deep.equal(expectedAd)
           done()

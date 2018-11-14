@@ -103,7 +103,7 @@ export default class AppNexusConnector {
       .then(normalizedInputs => {
         normalizedInputs.tags.forEach(tag =>
           this._astClient.modifyTag({
-            targetId: tag.targetId,
+            targetId: tag.id,
             data: tag.data
           })
         )
