@@ -11,6 +11,38 @@ describe('AppNexus Connector', function() {
         resolve()
       }, TIMEOUT_DEBOUNCE + delta)
     })
+    const makeAgiven = (n, appnexusOnly) => {
+        const given = {
+            id: 'ad' + n,
+            specification: {
+                appnexus: {
+                    targetId: 'ad' + n,
+                    invCode: 'inv-code' + n
+                },
+            }
+        }
+        if (!appnexusOnly) {
+          given.specification.prebid = {
+                code: 'ad' + n,
+                    mediaTypes: {
+                    banner: {
+                        sizes: [[970, 90]]
+                    }
+                },
+                bids: [
+                    {
+                        bidder: 'rubicon',
+                        params: {
+                            accountId: '1111',
+                            siteId: '2222',
+                            zoneId: '3333'
+                        }
+                    }
+                ]
+            }
+        }
+        return given
+    }
   const createLoggerMock = () => ({
     error: () => null,
     debug: () => null
@@ -45,35 +77,11 @@ describe('AppNexus Connector', function() {
   })
   describe('refresh method', () => {
     it('Should refresh one Ad', done => {
-      const givenId = 'ad1'
-      const givenSpecification = {
-        appnexus: {
-          targetId: givenId,
-          invCode: 'inv-code1'
-        },
-        prebid: {
-          code: givenId,
-          mediaTypes: {
-            banner: {
-              sizes: [[970, 90]]
-            }
-          },
-          bids: [
-            {
-              bidder: 'rubicon',
-              params: {
-                accountId: '1111',
-                siteId: '2222',
-                zoneId: '3333'
-              }
-            }
-          ]
-        }
-      }
+      const givenAd = makeAgiven(1)
 
       const expectedAd = {
         data: {
-          id: givenId
+          id: givenAd.id
         }
       }
 
@@ -114,7 +122,7 @@ describe('AppNexus Connector', function() {
       })
 
       appNexusConnector
-        .refresh({id: givenId, specification: givenSpecification})
+        .refresh({id: givenAd.id, specification: givenAd.specification})
         .then(ad => {
           expect(
             removeSpy.calledOnce,
@@ -123,7 +131,7 @@ describe('AppNexus Connector', function() {
           expect(
             removeSpy.args[0][0].id,
             'should remove the Ad id from the repository'
-          ).to.equal(givenId)
+          ).to.equal(givenAd.id)
 
           expect(
             modifyTagSpy.calledOnce,
@@ -133,8 +141,8 @@ describe('AppNexus Connector', function() {
             modifyTagSpy.args[0][0],
             'ast modifyTag should be with the update data'
           ).to.deep.equal({
-            targetId: givenId,
-            data: givenSpecification.appnexus
+            targetId: givenAd.id,
+            data: givenAd.specification.appnexus
           })
 
           expect(refreshSpy.calledOnce, 'ast refresh should be called one time')
@@ -142,14 +150,14 @@ describe('AppNexus Connector', function() {
           expect(
             refreshSpy.args[0][0],
             'ast refresh should be called with an array of ids'
-          ).to.deep.equal([givenId])
+          ).to.deep.equal([givenAd.id])
 
           expect(requestBidsSpy.calledOnce, 'prebid should request bids').to.be
             .true
           expect(
             requestBidsSpy.args[0][0].adUnits,
             'prebid should request bids for an array of given ad units'
-          ).to.deep.equal([givenSpecification.prebid])
+          ).to.deep.equal([givenAd.specification.prebid])
 
           expect(
             setTargetingForAstSpy.calledOnce,
@@ -162,34 +170,6 @@ describe('AppNexus Connector', function() {
         .catch(e => done(e))
     })
     it('Should refresh many Ads at the same time', done => {
-      const makeAgiven = n => ({
-        id: 'ad' + n,
-        specification: {
-          appnexus: {
-            targetId: 'ad' + n,
-            invCode: 'inv-code' + n
-          },
-          prebid: {
-            code: 'ad' + n,
-            mediaTypes: {
-              banner: {
-                sizes: [[970, 90]]
-              }
-            },
-            bids: [
-              {
-                bidder: 'rubicon',
-                params: {
-                  accountId: '1111',
-                  siteId: '2222',
-                  zoneId: '3333'
-                }
-              }
-            ]
-          }
-        }
-      })
-
       const givenAd1 = makeAgiven(1)
       const givenAd2 = makeAgiven(2)
       const givenAd3 = makeAgiven(3)
@@ -275,6 +255,72 @@ describe('AppNexus Connector', function() {
         })
         .catch(e => done(e))
     })
+      it('Should not call to prebid methods if no prebid is set', done => {
+          const givenAd1 = makeAgiven(1, true)
+
+          const prebidClientMock = {
+              requestBids: ({bidsBackHandler}) => bidsBackHandler(),
+              setTargetingForAst: () => null
+          }
+          const astClientMock = {
+              push: f => f(),
+              setPageOpts: () => null,
+              modifyTag: () => null,
+              refresh: () => null
+          }
+          const adRepositoryMock = {
+              remove: () => Promise.resolve(),
+              find: () => waitForDebounce()
+          }
+
+          const removeSpy = sinon.spy(adRepositoryMock, 'remove')
+          const modifyTagSpy = sinon.spy(astClientMock, 'modifyTag')
+          const refreshSpy = sinon.spy(astClientMock, 'refresh')
+
+          const requestBidsSpy = sinon.spy(prebidClientMock, 'requestBids')
+          const setTargetingForAstSpy = sinon.spy(
+              prebidClientMock,
+              'setTargetingForAst'
+          )
+
+          const appNexusConnector = new AppNexusConnector({
+              pageOpts: {
+                  member: 1000
+              },
+              logger: createLoggerMock(),
+              astClient: astClientMock,
+              prebidClient: prebidClientMock,
+              adRepository: adRepositoryMock,
+              loggerProvider: createloggerProviderMock()
+          })
+
+          appNexusConnector.refresh(givenAd1)
+              .then(() => {
+                  expect(
+                      removeSpy.callCount,
+                      'the Ad repository should have received 1 remove calls'
+                  ).to.equal(1)
+                  expect(
+                      modifyTagSpy.callCount,
+                      'the ast client should have recevied 3 modifyTag calls'
+                  ).to.equal(1)
+                  expect(
+                      setTargetingForAstSpy.called,
+                      'the prebid client should not recevie any setTargetingForAst call'
+                  ).to.be.false
+                  expect(
+                      requestBidsSpy.called,
+                      'the prebid client should not recevie any requestBids call'
+                  ).to.be.false
+                  expect(
+                      refreshSpy.callCount,
+                      'the ast client should have recevied 1 refresh call'
+                  ).to.equal(1)
+
+                  done()
+              })
+              .catch(e => done(e))
+      })
   })
   describe('enableDebug method', () => {
     it('Should call the logger provider with the received value', () => {
@@ -705,159 +751,6 @@ describe('AppNexus Connector', function() {
             findSpy.args[0][0],
             'should have found the Ad in the repository with valid parameters'
           ).to.deep.equal({id: givenId})
-          done()
-        })
-        .catch(e => done(e))
-    })
-  })
-  describe('refresh method', () => {
-    it('Should return a promise', () => {
-      const appNexusConnector = new AppNexusConnector({
-        member: 1000,
-        logger: createLoggerMock(),
-        astClient: createAstClientMock(),
-        adRepository: createAdRepositoryMock(),
-        loggerProvider: createloggerProviderMock()
-      })
-      expect(appNexusConnector.refresh({})).to.be.a('promise')
-    })
-    it('Should remove the Ad from the repository, modify the tag, refresh the tag and wait for the Ad response if any update data is received', done => {
-      const astClientMock = createAstClientMock()
-      const adRepositoryMock = createAdRepositoryMock({
-        findResult: 'whatever'
-      })
-      const findSpy = sinon.spy(adRepositoryMock, 'find')
-      const modifyTagSpy = sinon.spy(astClientMock, 'modifyTag')
-      const refreshSpy = sinon.spy(astClientMock, 'refresh')
-      const appNexusConnector = new AppNexusConnector({
-        member: 1000,
-        logger: createLoggerMock(),
-        astClient: astClientMock,
-        adRepository: adRepositoryMock,
-        loggerProvider: createloggerProviderMock()
-      })
-      const givenParameters = {
-        domElementId: 1,
-        placement: 2,
-        sizes: [[3, 4]],
-        segmentation: {a: 5},
-        native: {b: 6}
-      }
-
-      appNexusConnector
-        .refresh(givenParameters)
-        .then(() => {
-          const modifyTagExpectedParameters = {
-            targetId: givenParameters.domElementId,
-            data: {
-              invCode: givenParameters.placement,
-              sizes: givenParameters.sizes,
-              keywords: givenParameters.segmentation,
-              native: givenParameters.native
-            }
-          }
-          expect(modifyTagSpy.calledOnce, 'should have modified the tag').to.be
-            .true
-          expect(
-            modifyTagSpy.args[0][0],
-            'should have modified the tag with valid parameters'
-          ).to.deep.equal(modifyTagExpectedParameters)
-          expect(refreshSpy.calledOnce, 'should have refreshed the tag').to.be
-            .true
-          expect(
-            refreshSpy.args[0][0],
-            'should have refreshed the tag with valid parameters'
-          ).to.deep.equal([givenParameters.domElementId])
-          expect(
-            findSpy.calledOnce,
-            'should have found the Ad in the repository'
-          ).to.be.true
-          expect(
-            findSpy.args[0][0],
-            'should have found the Ad in the repository with valid parameters'
-          ).to.deep.equal({id: givenParameters.domElementId})
-          done()
-        })
-        .catch(e => done(e))
-    })
-    it('Should modify the tag only with the data received to modify, if some is received', done => {
-      const astClientMock = createAstClientMock()
-      const modifyTagSpy = sinon.spy(astClientMock, 'modifyTag')
-      const appNexusConnector = new AppNexusConnector({
-        member: 1000,
-        logger: createLoggerMock(),
-        astClient: astClientMock,
-        adRepository: createAdRepositoryMock(),
-        loggerProvider: createloggerProviderMock()
-      })
-      const givenParameters = {
-        domElementId: 1,
-        sizes: [[3, 4]]
-      }
-
-      appNexusConnector
-        .refresh(givenParameters)
-        .then(() => {
-          const modifyTagExpectedParameters = {
-            targetId: givenParameters.domElementId,
-            data: {
-              sizes: givenParameters.sizes
-            }
-          }
-          expect(modifyTagSpy.calledOnce, 'should have modified the tag').to.be
-            .true
-          expect(
-            modifyTagSpy.args[0][0],
-            'should have modified the tag with valid parameters'
-          ).to.deep.equal(modifyTagExpectedParameters)
-          done()
-        })
-        .catch(e => done(e))
-    })
-    it('Should not call to modify the tag if no data to modify is received', done => {
-      const astClientMock = createAstClientMock()
-      const modifyTagSpy = sinon.spy(astClientMock, 'modifyTag')
-      const appNexusConnector = new AppNexusConnector({
-        member: 1000,
-        logger: createLoggerMock(),
-        astClient: astClientMock,
-        adRepository: createAdRepositoryMock(),
-        loggerProvider: createloggerProviderMock()
-      })
-      const givenParameters = {
-        id: 1
-      }
-
-      appNexusConnector
-        .refresh(givenParameters)
-        .then(() => {
-          expect(modifyTagSpy.called, 'should not have modified the tag').to.be
-            .false
-          done()
-        })
-        .catch(e => done(e))
-    })
-    it('Should reject if ad repository rejects returning the ad response', done => {
-      const adRepositoryMock = createAdRepositoryMock({
-        findResult: Promise.reject(new Error('rejected find result'))
-      })
-      const appNexusConnector = new AppNexusConnector({
-        member: 1000,
-        logger: createLoggerMock(),
-        astClient: createAstClientMock(),
-        adRepository: adRepositoryMock,
-        loggerProvider: createloggerProviderMock()
-      })
-      const givenParameters = {
-        id: 1
-      }
-      appNexusConnector
-        .refresh(givenParameters)
-        .then(() => {
-          done(new Error('should have been rejected'))
-        })
-        .catch(e => {
-          expect(e.message).to.equal('rejected find result')
           done()
         })
         .catch(e => done(e))
