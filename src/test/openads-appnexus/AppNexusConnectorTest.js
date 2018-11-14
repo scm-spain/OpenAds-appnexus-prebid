@@ -75,6 +75,26 @@ describe('AppNexus Connector', function() {
   const createloggerProviderMock = () => ({
     debugMode: () => null
   })
+  describe('constructor', () => {
+    it('should call the setPageOpts if options are given', done => {
+        const givenPageOpts = {
+          member: 1000
+        }
+        const astClientMock = createAstClientMock()
+        const setPageOptsSpy = sinon.spy(astClientMock, 'setPageOpts')
+        Promise.resolve()
+            .then(() => new AppNexusConnector({
+                pageOpts: givenPageOpts,
+                astClient: astClientMock
+            }))
+            .then(() => {
+              expect(setPageOptsSpy.called, 'setPageOpts should be called').to.be.true
+              expect(setPageOptsSpy.args[0][0], 'setPageOpts should receive the pageOpts').to.deep.equal(givenPageOpts)
+              done()
+            })
+            .catch(e => done(e))
+    })
+  })
   describe('refresh method', () => {
     it('Should refresh one Ad', done => {
       const givenAd = makeAgiven(1)
