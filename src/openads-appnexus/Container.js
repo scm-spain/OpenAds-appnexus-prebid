@@ -61,6 +61,9 @@ export default class Container {
   }
 
   _buildPrebidClient() {
-    return new PrebidClientImpl({window})
+    return new PrebidClientImpl({
+      window,
+      logger: this.getInstance({key: 'Logger'})
+    })
   }
 }
