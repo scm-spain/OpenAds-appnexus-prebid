@@ -2,7 +2,6 @@ import LogLevel from 'loglevel'
 import LogProvider from './LogProvider'
 import AppNexusConnector from './AppNexusConnector'
 import AstClientImpl from './AstClientImpl'
-import ApnTagWrapper from './ApnTagWrapper'
 import AdListenerRepository from './repository/AdListenerRepository'
 import PrebidClientImpl from './PrebidClientImpl'
 
@@ -30,7 +29,7 @@ export default class Container {
       logger: this.getInstance({key: 'Logger'}),
       astClient: this.getInstance({key: 'AstClient'}),
       adRepository: this.getInstance({key: 'AdRepository'}),
-      prebidClient: this.getInstance(({key: 'PrebidClient'}))
+      prebidClient: this.getInstance({key: 'PrebidClient'})
     })
   }
 
@@ -51,7 +50,7 @@ export default class Container {
   _buildAstClient() {
     return new AstClientImpl({
       logger: this.getInstance({key: 'Logger'}),
-      apnTag: this.getInstance({key: 'ApnTag'})
+      apnTag: window.apntag || {}
     })
   }
 
@@ -61,17 +60,7 @@ export default class Container {
     })
   }
 
-  _buildApnTag() {
-    return ApnTagWrapper.build()
-  }
-
   _buildPrebidClient() {
-    return new PrebidClientImpl({
-      pbjs: this.getInstance({key: 'pbjs'})
-    })
-  }
-
-  _buildPbjs() {
-    return // Instance from the outside
+    return new PrebidClientImpl({window})
   }
 }

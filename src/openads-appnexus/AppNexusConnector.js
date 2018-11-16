@@ -80,7 +80,7 @@ export default class AppNexusConnector {
         normalizedInputs.tags.forEach(input =>
           this._defineAppNexusTag({id: input.id, tag: input.data})
         )
-        if (normalizedInputs.prebid.length > 0) {
+        if (normalizedInputs.adUnits.length > 0) {
           this._prebidClient.addAdUnits(normalizedInputs.adUnits)
           this._prebidClient.requestBids({
             timeout: TIMEOUT_PREBID,
@@ -114,7 +114,9 @@ export default class AppNexusConnector {
             bidsBackHandler: () =>
               this._astClient.push(() => {
                 this._prebidClient.setTargetingForAst()
-                this._astClient.refresh(normalizedInputs.tags.map(input => input.id))
+                this._astClient.refresh(
+                  normalizedInputs.tags.map(input => input.id)
+                )
               })
           })
         } else {
