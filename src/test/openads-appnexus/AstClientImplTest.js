@@ -19,33 +19,45 @@ describe('AstClient implementation', function() {
     refresh: () => null,
     modifyTag: () => null
   })
+
+  const apnTagMock = createApnTagMock()
+  const loggerMock = createLoggerMock()
+  const windowMock = {
+    apnTag: apnTagMock
+  }
+  const astClient = new AstClientImpl({
+    logger: loggerMock,
+    window: windowMock
+  })
+  const anqSpy = sinon.spy(apnTagMock.anq, 'push')
+
   describe('debugMode method', function() {
     it('should update the apntag debug value to the given value', function() {
-      const apnTagMock = createApnTagMock()
-      const astClient = new AstClientImpl({apnTag: apnTagMock})
       astClient.debugMode({enabled: true})
       expect(apnTagMock.debug, 'debug value should have been updated').to.be
         .true
     })
   })
+
   describe('onEvent method', function() {
     it('should call the apntag onEvent method via anq', function() {
-      const loggerMock = createLoggerMock()
       const apnTagMock = createApnTagMock()
-      const onEventSpy = sinon.spy(apnTagMock, 'onEvent')
-      const anqSpy = sinon.spy(apnTagMock.anq, 'push')
+      const loggerMock = createLoggerMock()
+      const windowMock = {
+        apnTag: apnTagMock
+      }
       const astClient = new AstClientImpl({
-        apnTag: apnTagMock,
-        logger: loggerMock
+        logger: loggerMock,
+        window: windowMock
       })
+      const anqSpy = sinon.spy(apnTagMock.anq, 'push')
+      const onEventSpy = sinon.spy(apnTagMock, 'onEvent')
       const givenParameters = {
         targetId: 'id',
         event: 'THE_EVENT',
         callback: () => null
       }
-
       astClient.onEvent(givenParameters)
-
       const expectedUnnamedParameters = [
         givenParameters.event,
         givenParameters.targetId,
@@ -59,16 +71,20 @@ describe('AstClient implementation', function() {
       ).to.deep.equal(expectedUnnamedParameters)
     })
   })
+
   describe('defineTag method', function() {
     it('should call the apntag defineTag method via anq', function() {
-      const loggerMock = createLoggerMock()
       const apnTagMock = createApnTagMock()
-      const defineTagSpy = sinon.spy(apnTagMock, 'defineTag')
-      const anqSpy = sinon.spy(apnTagMock.anq, 'push')
+      const loggerMock = createLoggerMock()
+      const windowMock = {
+        apnTag: apnTagMock
+      }
       const astClient = new AstClientImpl({
-        apnTag: apnTagMock,
-        logger: loggerMock
+        logger: loggerMock,
+        window: windowMock
       })
+      const anqSpy = sinon.spy(apnTagMock.anq, 'push')
+      const defineTagSpy = sinon.spy(apnTagMock, 'defineTag')
       const givenParameters = {
         member: '1',
         targetId: '2',
@@ -87,16 +103,10 @@ describe('AstClient implementation', function() {
       ).to.deep.equal(givenParameters)
     })
   })
+
   describe('loadTags method', function() {
     it('should call the apntag loadTags method via anq', done => {
-      const loggerMock = createLoggerMock()
-      const apnTagMock = createApnTagMock()
       const loadTagsSpy = sinon.spy(apnTagMock, 'loadTags')
-      const anqSpy = sinon.spy(apnTagMock.anq, 'push')
-      const astClient = new AstClientImpl({
-        apnTag: apnTagMock,
-        logger: loggerMock
-      })
       astClient.loadTags()
       setTimeout(() => {
         expect(anqSpy.calledOnce, 'anq shoud have been called').to.be.true
@@ -106,17 +116,20 @@ describe('AstClient implementation', function() {
       }, 200)
     })
   })
+
   describe('showTag method', function() {
     it('should call the apntag showTag method via anq', function() {
-      const loggerMock = createLoggerMock()
       const apnTagMock = createApnTagMock()
-      const showTagSpy = sinon.spy(apnTagMock, 'showTag')
-      const anqSpy = sinon.spy(apnTagMock.anq, 'push')
+      const loggerMock = createLoggerMock()
+      const windowMock = {
+        apnTag: apnTagMock
+      }
       const astClient = new AstClientImpl({
-        apnTag: apnTagMock,
-        logger: loggerMock
+        logger: loggerMock,
+        window: windowMock
       })
-
+      const anqSpy = sinon.spy(apnTagMock.anq, 'push')
+      const showTagSpy = sinon.spy(apnTagMock, 'showTag')
       const givenParameters = {targetId: 'id'}
       astClient.showTag(givenParameters)
       const expectedUnnamedParameters = [givenParameters.targetId]
@@ -128,17 +141,20 @@ describe('AstClient implementation', function() {
       ).to.deep.equal(expectedUnnamedParameters)
     })
   })
+
   describe('refresh method', function() {
     it('should call the apntag refresh method via anq', done => {
-      const loggerMock = createLoggerMock()
       const apnTagMock = createApnTagMock()
-      const refreshSpy = sinon.spy(apnTagMock, 'refresh')
-      const anqSpy = sinon.spy(apnTagMock.anq, 'push')
+      const loggerMock = createLoggerMock()
+      const windowMock = {
+        apnTag: apnTagMock
+      }
       const astClient = new AstClientImpl({
-        apnTag: apnTagMock,
-        logger: loggerMock
+        logger: loggerMock,
+        window: windowMock
       })
-
+      const anqSpy = sinon.spy(apnTagMock.anq, 'push')
+      const refreshSpy = sinon.spy(apnTagMock, 'refresh')
       const givenParameters = ['target1', 'target2']
       astClient.refresh(givenParameters)
       setTimeout(() => {
@@ -152,6 +168,5 @@ describe('AstClient implementation', function() {
         done()
       }, 200)
     })
-    
   })
 })

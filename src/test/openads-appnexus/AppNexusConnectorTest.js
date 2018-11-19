@@ -397,7 +397,7 @@ describe('AppNexus Connector', function() {
       const givenId = 1
 
       appNexusConnector
-        .display({domElementId: givenId})
+        .display({id: givenId})
         .then(() => {
           expect(showSpy.calledOnce, 'should have called the show method').to.be
             .true
@@ -442,7 +442,7 @@ describe('AppNexus Connector', function() {
 
       const givenSpecification = {
         source: 'appNexusPrebid',
-        appNexus: {
+        appnexus: {
           placement: 2,
           sizes: [[3, 4]],
           segmentation: {a: 5},
@@ -514,7 +514,7 @@ describe('AppNexus Connector', function() {
 
       const givenSpecification = {
         source: 'appNexusPrebid',
-        appNexus: {
+        appnexus: {
           placement: 2,
           sizes: [[3, 4]],
           segmentation: {a: 5},
@@ -526,7 +526,7 @@ describe('AppNexus Connector', function() {
 
       const givenSpecification2 = {
         source: 'appNexusPrebid',
-        appNexus: {
+        appnexus: {
           placement: 2,
           sizes: [[3, 4]],
           segmentation: {a: 5},

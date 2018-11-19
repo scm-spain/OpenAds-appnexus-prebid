@@ -7,7 +7,7 @@ export default class PrebidClientImpl {
   constructor({window, logger}) {
     this._window = window
     this._logger = logger
-    this._pbjs = this._window.pbjs || {} // TODO: DEFINE WHAT SHOULD HAPPEN IF PBJS IS NOT PRESENT IN THE WINDOW
+    this._pbjs = this._window.pbjs || {}
     this._pbjs.que = this._window.pbjs.que || []
   }
 

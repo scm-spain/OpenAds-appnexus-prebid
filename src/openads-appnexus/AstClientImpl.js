@@ -3,8 +3,10 @@
  * @implements {AstClient}
  */
 export default class AstClientImpl {
-  constructor({logger, apnTag}) {
-    this._apnTag = apnTag
+  constructor({logger, window}) {
+    this._window = window
+    this._apnTag = this._window.apnTag || {}
+    this._apnTag.anq = this._window.apnTag.anq || []
     this._logger = logger
   }
 

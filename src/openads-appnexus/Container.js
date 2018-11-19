@@ -50,7 +50,7 @@ export default class Container {
   _buildAstClient() {
     return new AstClientImpl({
       logger: this.getInstance({key: 'Logger'}),
-      apnTag: window.apntag || {}
+      window: window
     })
   }
 
