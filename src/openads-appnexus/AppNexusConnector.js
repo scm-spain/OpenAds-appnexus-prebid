@@ -84,11 +84,12 @@ export default class AppNexusConnector {
           this._prebidClient.addAdUnits(normalizedInputs.adUnits)
           this._prebidClient.requestBids({
             timeout: TIMEOUT_PREBID,
-            bidsBackHandler: () =>
+            bidsBackHandler: () => {
               this._astClient.push(() => {
                 this._prebidClient.setTargetingForAst()
                 this._astClient.loadTags()
               })
+            }
           })
         } else {
           this._astClient.loadTags()
