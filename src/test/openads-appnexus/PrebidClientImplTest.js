@@ -103,7 +103,7 @@ describe('PrebidClientImpl Test', () => {
         bidsBackHandler: ({bidsBackHandler}) => bidsBackHandler()
       }
 
-      prebidClient.requestBids({requestObj: givenParameters})
+      prebidClient.requestBids(givenParameters)
       expect(queSpy.calledOnce).to.be.true
       expect(requestBidsSpy.calledOnce).to.be.true
       expect(requestBidsSpy.args[0][0]).to.deep.equal(givenParameters)

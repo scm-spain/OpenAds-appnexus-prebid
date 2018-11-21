@@ -107,12 +107,10 @@ export default class AppNexusConnector {
         if (normalizedInputs.adUnits.length > 0) {
           this._prebidClient.addAdUnits({adUnits: normalizedInputs.adUnits})
           this._prebidClient.requestBids({
-            requestObj: {
-              timeout: TIMEOUT_PREBID,
-              bidsBackHandler: () => {
-                this._prebidClient.setTargetingForAst()
-                this._astClient.loadTags()
-              }
+            timeout: TIMEOUT_PREBID,
+            bidsBackHandler: () => {
+              this._prebidClient.setTargetingForAst()
+              this._astClient.loadTags()
             }
           })
         } else {
@@ -139,15 +137,13 @@ export default class AppNexusConnector {
         )
         if (normalizedInputs.adUnits.length > 0) {
           this._prebidClient.requestBids({
-            requestObj: {
-              adUnits: normalizedInputs.adUnits,
-              timeout: TIMEOUT_PREBID,
-              bidsBackHandler: () => {
-                this._prebidClient.setTargetingForAst()
-                this._astClient.refresh(
-                  normalizedInputs.tags.map(input => input.id)
-                )
-              }
+            adUnits: normalizedInputs.adUnits,
+            timeout: TIMEOUT_PREBID,
+            bidsBackHandler: () => {
+              this._prebidClient.setTargetingForAst()
+              this._astClient.refresh(
+                normalizedInputs.tags.map(input => input.id)
+              )
             }
           })
         } else {

@@ -18,7 +18,7 @@ export default class PrebidClientImpl {
     return this
   }
 
-  requestBids({requestObj}) {
+  requestBids(requestObj) {
     this._logger.debug(
       this._logger.name,
       '| requestBids | requestObj:',

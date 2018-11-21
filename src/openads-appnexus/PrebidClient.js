@@ -13,8 +13,13 @@ export default class PrebidClient {
   /**
    * Defines requestBids
    * @param requestObj
+   * @param requestObj.adUnits
+   * @param requestObj.timeout
+   * @param requestObj.bidsBackHandler
+   * @param requestObj.adUnitCodes
+   * @param requestObj.labels
    */
-  requestBids({requestObj}) {
+  requestBids(requestObj) {
     throw new Error('AppNexusConnector#requestBids must be implemented')
   }
 
