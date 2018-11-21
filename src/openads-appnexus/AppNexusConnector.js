@@ -139,13 +139,15 @@ export default class AppNexusConnector {
         )
         if (normalizedInputs.adUnits.length > 0) {
           this._prebidClient.requestBids({
-            adUnits: normalizedInputs.adUnits,
-            timeout: TIMEOUT_PREBID,
-            bidsBackHandler: () => {
-              this._prebidClient.setTargetingForAst()
-              this._astClient.refresh(
-                normalizedInputs.tags.map(input => input.id)
-              )
+            requestObj: {
+              adUnits: normalizedInputs.adUnits,
+              timeout: TIMEOUT_PREBID,
+              bidsBackHandler: () => {
+                this._prebidClient.setTargetingForAst()
+                this._astClient.refresh(
+                  normalizedInputs.tags.map(input => input.id)
+                )
+              }
             }
           })
         } else {

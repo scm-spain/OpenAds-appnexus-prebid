@@ -114,7 +114,7 @@ describe('AppNexus Connector', function() {
       }
 
       const prebidClientMock = {
-        requestBids: ({bidsBackHandler}) => bidsBackHandler(),
+        requestBids: ({requestObj}) => requestObj.bidsBackHandler(),
         setTargetingForAst: () => null
       }
       const astClientMock = {
@@ -183,7 +183,7 @@ describe('AppNexus Connector', function() {
           expect(requestBidsSpy.calledOnce, 'prebid should request bids').to.be
             .true
           expect(
-            requestBidsSpy.args[0][0].adUnits,
+            requestBidsSpy.args[0][0].requestObj.adUnits,
             'prebid should request bids for an array of given ad units'
           ).to.deep.equal([givenAd.specification.prebid])
 
@@ -203,7 +203,7 @@ describe('AppNexus Connector', function() {
       const givenAd3 = makeAgiven(3)
 
       const prebidClientMock = {
-        requestBids: ({bidsBackHandler}) => bidsBackHandler(),
+        requestBids: ({requestObj}) => requestObj.bidsBackHandler(),
         setTargetingForAst: () => null
       }
       const astClientMock = {
@@ -267,7 +267,7 @@ describe('AppNexus Connector', function() {
           ).to.equal(1)
 
           expect(
-            requestBidsSpy.args[0][0].adUnits,
+            requestBidsSpy.args[0][0].requestObj.adUnits,
             'the requestBids call should contain the 3 ad units'
           ).to.deep.equal([
             givenAd1.specification.prebid,
