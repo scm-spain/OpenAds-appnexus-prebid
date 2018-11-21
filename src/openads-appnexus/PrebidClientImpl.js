@@ -6,9 +6,10 @@
 export default class PrebidClientImpl {
   constructor({window, logger}) {
     this._window = window
+    this._window.pbjs = this._window.pbjs || {}
+    this._window.pbjs.que = this._window.pbjs.que || []
+    this._pbjs = this._window.pbjs
     this._logger = logger
-    this._pbjs = this._window.pbjs || {}
-    this._pbjs.que = this._window.pbjs.que || []
   }
 
   addAdUnits({adUnits}) {
@@ -32,7 +33,7 @@ export default class PrebidClientImpl {
       this._logger.name,
       '| setTargetingForAst has been called.'
     )
-    this._pbjs.que.push(() => this._pbjs.setTargetForAst())
+    this._pbjs.que.push(() => this._pbjs.setTargetingForAst())
     return this
   }
 }

@@ -5,8 +5,9 @@
 export default class AstClientImpl {
   constructor({logger, window}) {
     this._window = window
-    this._apnTag = this._window.apnTag || {}
-    this._apnTag.anq = this._window.apnTag.anq || []
+    this._window.apntag = this._window.apntag || {}
+    this._window.apntag.anq = this._window.apntag.anq || []
+    this._apnTag = this._window.apntag
     this._logger = logger
   }
 
@@ -40,7 +41,7 @@ export default class AstClientImpl {
   }
 
   loadTags() {
-    this._logger.debug(this._logger.name, '| loadTags has been requested')
+    this._logger.debug(this._logger.name, '| loadTags has been called')
     this._apnTag.anq.push(() => this._apnTag.loadTags())
     return this
   }

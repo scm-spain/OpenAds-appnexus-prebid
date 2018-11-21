@@ -49,8 +49,8 @@ export default class Container {
 
   _buildAstClient() {
     return new AstClientImpl({
-      logger: this.getInstance({key: 'Logger'}),
-      window: window
+      window,
+      logger: this.getInstance({key: 'Logger'})
     })
   }
 

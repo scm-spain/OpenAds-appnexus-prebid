@@ -48,7 +48,13 @@ export default class AppNexusConnector {
   }
 
   loadAd({id, specification}) {
-    // noinspection JSAnnotator
+    this._logger.debug(
+      this._logger.name,
+      '| loadAd | id:',
+      id,
+      '| specification:',
+      specification
+    )
     return Promise.resolve()
       .then(() => this._adRepository.remove({id: id}))
       .then(() => this._loadAdDebouncer.debounce({input: {id, specification}}))
@@ -56,12 +62,20 @@ export default class AppNexusConnector {
   }
 
   display({id}) {
+    this._logger.debug(this._logger.name, '| display | id:', id)
     return Promise.resolve()
       .then(() => this._astClient.showTag({targetId: id}))
       .then(null)
   }
 
   refresh({id, specification}) {
+    this._logger.debug(
+      this._logger.name,
+      '| refresh | id:',
+      id,
+      '| specification:',
+      specification
+    )
     return Promise.resolve()
       .then(() => this._adRepository.remove({id: id}))
       .then(() => this._refreshDebouncer.debounce({input: {id, specification}}))
@@ -74,21 +88,31 @@ export default class AppNexusConnector {
    * @private
    */
   _onLoadAdDebounce(loadAdInputs) {
+    this._logger.debug(
+      this._logger.name,
+      '| _onLoadAdDebounce | loadAdInputs:',
+      loadAdInputs
+    )
     return Promise.resolve(loadAdInputs)
       .then(this._buildNormalizedInputs)
       .then(normalizedInputs => {
+        this._logger.debug(
+          this._logger.name,
+          '| _onLoadAdDebounce | normalizedInputs:',
+          normalizedInputs
+        )
         normalizedInputs.tags.forEach(input =>
           this._defineAppNexusTag({id: input.id, tag: input.data})
         )
         if (normalizedInputs.adUnits.length > 0) {
-          this._prebidClient.addAdUnits(normalizedInputs.adUnits)
+          this._prebidClient.addAdUnits({adUnits: normalizedInputs.adUnits})
           this._prebidClient.requestBids({
-            timeout: TIMEOUT_PREBID,
-            bidsBackHandler: () => {
-              this._astClient.push(() => {
+            requestObj: {
+              timeout: TIMEOUT_PREBID,
+              bidsBackHandler: () => {
                 this._prebidClient.setTargetingForAst()
                 this._astClient.loadTags()
-              })
+              }
             }
           })
         } else {
@@ -99,6 +123,11 @@ export default class AppNexusConnector {
   }
 
   _onRefreshDebounce(refreshInputs) {
+    this._logger.debug(
+      this._logger.name,
+      '| _onRefreshDebounce | refreshInputs:',
+      refreshInputs
+    )
     return Promise.resolve(refreshInputs)
       .then(this._buildNormalizedInputs)
       .then(normalizedInputs => {
@@ -112,13 +141,12 @@ export default class AppNexusConnector {
           this._prebidClient.requestBids({
             adUnits: normalizedInputs.adUnits,
             timeout: TIMEOUT_PREBID,
-            bidsBackHandler: () =>
-              this._astClient.push(() => {
-                this._prebidClient.setTargetingForAst()
-                this._astClient.refresh(
-                  normalizedInputs.tags.map(input => input.id)
-                )
-              })
+            bidsBackHandler: () => {
+              this._prebidClient.setTargetingForAst()
+              this._astClient.refresh(
+                normalizedInputs.tags.map(input => input.id)
+              )
+            }
           })
         } else {
           this._astClient.refresh(normalizedInputs.tags.map(input => input.id))
@@ -145,6 +173,13 @@ export default class AppNexusConnector {
   }
 
   _defineAppNexusTag({id, tag}) {
+    this._logger.debug(
+      this._logger.name,
+      '| _defineAppNexusTag | id:',
+      id,
+      '| tag:',
+      tag
+    )
     this._astClient.defineTag(tag)
     this._astClient.onEvent({
       event: AD_AVAILABLE,

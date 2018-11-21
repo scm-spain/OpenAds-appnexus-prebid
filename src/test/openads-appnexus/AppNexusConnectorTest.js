@@ -611,7 +611,7 @@ describe('AppNexus Connector', function() {
 
       const prebidClientMock = {
         addAdUnits: () => {},
-        requestBids: ({bidsBackHandler}) => bidsBackHandler(),
+        requestBids: ({requestObj}) => requestObj.bidsBackHandler(),
         setTargetingForAst: () => null
       }
 
@@ -654,7 +654,7 @@ describe('AppNexus Connector', function() {
 
             expect(requestBidsSpy.calledOnce).to.be.true
 
-            expect(addAdUnitsSpy.args[0][0]).to.deep.equal(
+            expect(addAdUnitsSpy.args[0][0].adUnits).to.deep.equal(
               expectedprebidUnitsArray
             )
 
@@ -704,7 +704,7 @@ describe('AppNexus Connector', function() {
 
       const prebidClientMock = {
         addAdUnits: () => {},
-        requestBids: ({bidsBackHandler}) => bidsBackHandler(),
+        requestBids: ({requestObj}) => requestObj.bidsBackHandler(),
         setTargetingForAst: () => null
       }
 
@@ -756,7 +756,7 @@ describe('AppNexus Connector', function() {
 
             expect(requestBidsSpy.calledOnce).to.be.true
 
-            expect(addAdUnitsSpy.args[0][0]).to.deep.equal(
+            expect(addAdUnitsSpy.args[0][0].adUnits).to.deep.equal(
               expectedprebidUnitsArray
             )
 
