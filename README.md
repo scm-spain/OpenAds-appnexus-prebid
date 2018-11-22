@@ -1,13 +1,17 @@
 # OpenAds AppNexus Prebid connector
 [![Build Status](https://travis-ci.org/scm-spain/OpenAds-appnexus-prebid.svg?branch=master)](https://travis-ci.org/scm-spain/OpenAds-appnexus-prebid)
+[![codecov](https://codecov.io/gh/scm-spain/Openads-appnexus-prebid/branch/master/graph/badge.svg)](https://codecov.io/gh/scm-spain/Openads-appnexus-prebid)
+[![GitHub license](https://img.shields.io/github/license/scm-spain/Openads-appnexus-prebid.svg)](https://github.com/scm-spain/Openads-appnexus-prebid/blob/master/LICENSE)
+[![npm version](https://img.shields.io/npm/v/@schibstedspain/Openads-appnexus-prebid.svg)](https://www.npmjs.com/package/@schibstedspain/Openads-appnexus-prebid)
 
-[OpenAds](https://github.com/scm-spain/OpenAds) OpenAds AppNexus connector with Prebid features.
+# About
+OpenAds AppNexus connector with [Prebid](https://prebid.org) features.
 
-OpenAds now support sources as modules by configuration so you can include whatever module available you want.
+[OpenAds](https://github.com/scm-spain/OpenAds) now support sources as modules by configuration so you can include whatever module available you want.
 To build your own module take a look at the section ```Build your own module```
 
 # Installation
-AppNexus Prebid module is available as the ```@schibstedspain/openads-appnexus-prebid``` package on [npm](https://www.npmjs.com/)
+AppNexus Prebid module is available as the ```@schibstedspain/openads-appnexus-prebid``` package on [npm](https://www.npmjs.com/package/@schibstedspain/Openads-appnexus-prebid)
 
 To install the stable version:
 ```
@@ -37,12 +41,29 @@ const openAds = OpenAds.init({config:{
 }})
 ```
 
+# Preconditions
+
+This connector needs AppNexus Seller Tag (AST) and Prebid JS loaded in the page. Here an example:
+
+```html
+<head>
+    <script src="https://c.dcdn.es/prebid/fotocasa/dev/prebid.js" async></script>
+    <script src="https://acdn.adnxs.com/ast/ast.js" async></script>
+</head>
+```
+
+More info about:
+* AST: https://wiki.appnexus.com/display/sdk/AppNexus+Seller+Tag
+* Prebid Js: http://prebid.org/dev-docs/getting-started.html
+
+
+# Build your own module
+
 This connector implements these [Connector API](https://github.com/scm-spain/OpenAds-ConnectorAPI) interfaces:
 * AdViewable
 * AdLoadable
 * Logger
 
-# Build your own module
 All modules to work fine with OpenAds must **implement** at least one interface of type AdLoadable or AdViewable
 The idea is that your module implements only the interfaces that support, for example AppNexus supports both
 
