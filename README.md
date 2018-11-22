@@ -1,17 +1,17 @@
-# OpenAds-appnexus
-[![Build Status](https://travis-ci.org/scm-spain/OpenAds-appnexus.svg?branch=master)](https://travis-ci.org/scm-spain/OpenAds-appnexus)
+# OpenAds AppNexus Prebid connector
+[![Build Status](https://travis-ci.org/scm-spain/OpenAds-appnexus-prebid.svg?branch=master)](https://travis-ci.org/scm-spain/OpenAds-appnexus-prebid)
 
-[OpenAds](https://github.com/scm-spain/OpenAds) AppNexus seller tag module for handle ads.
+[OpenAds](https://github.com/scm-spain/OpenAds) OpenAds AppNexus connector with Prebid features.
 
 OpenAds now support sources as modules by configuration so you can include whatever module available you want.
 To build your own module take a look at the section ```Build your own module```
 
 # Installation
-AppNexus module is available as the ```@schibstedspain/openads-appnexus``` package on [npm](https://www.npmjs.com/)
+AppNexus Prebid module is available as the ```@schibstedspain/openads-appnexus-prebid``` package on [npm](https://www.npmjs.com/)
 
 To install the stable version:
 ```
-npm install --save @schibstedspain/openads-appnexus
+npm install --save @schibstedspain/openads-appnexus-prebid
 ```
 
 # Usage
@@ -22,7 +22,7 @@ Now you are able to put the instance as a source available in OpenAds configurat
 
 ```ecmascript 6
 import OpenAds from '@schibstedspain/openads'
-import AppNexusConnector from '@schibstedspain/openads-appnexus'
+import AppNexusConnector from '@schibstedspain/openads-appnexus-prebid'
 
 const appNexusConnector = AppNexusConnector.init({
   config: {

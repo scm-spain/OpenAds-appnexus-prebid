@@ -1,13 +1,13 @@
 {
-  "name": "@schibstedspain/openads-appnexus",
-  "version": "1.1.0",
-  "description": "OpenAds AppNexus module for handle ads",
+  "name": "@schibstedspain/openads-appnexus-prebid",
+  "version": "0.0.1",
+  "description": "OpenAds AppNexus connector with Prebid features",
   "main": "dist/",
   "scripts": {
     "cleanDistFolder": "rm -Rf ./dist",
     "prepublishOnly": "npm run cleanDistFolder && npm run build",
     "build": "npm run cleanDistFolder && babel src --ignore test --out-dir dist ",
-    "test": "mocha --recursive --require babel-polyfill --compilers js:babel-register \"src/test/**/*.js\"",
+    "test": "mocha --recursive --require babel-polyfill --require babel-core/register \"src/test/**/*.js\"",
     "lint": "sui-lint js",
     "coverage": "istanbul cover --report html _mocha -- ./src/*test --recursive --compilers js:babel-register",
     "coverage:ci": "istanbul cover _mocha -- ./src/*test --recursive --compilers js:babel-register && codecov"
@@ -19,9 +19,11 @@
   "keywords": [
     "appnexus",
     "ast",
-    "appnexus seller tag"
+    "appnexus seller tag",
+    "prebid",
+    "openads"
   ],
-  "author": "The Mighty Ducks of Advertising",
+  "author": "One Punch Team",
   "license": "ISC",
   "devDependencies": {
     "@s-ui/lint": "^2.18.0",
@@ -34,7 +36,7 @@
     "codecov": "^3.0.1",
     "istanbul": "^1.1.0-alpha.1",
     "jsdom": "^11.10.0",
-    "mocha": "^3.4.2",
+    "mocha": "^5.2.0",
     "onchange": "^3.3.0",
     "sinon": "^2.3.4"
   },
@@ -53,7 +55,6 @@
     ]
   },
   "dependencies": {
-    "@schibstedspain/ast": "^0.16.0",
     "@schibstedspain/openads-connector-api": "^1.2.0",
     "loglevel": "^1.6.1"
   }
