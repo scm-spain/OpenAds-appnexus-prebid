@@ -1,6 +1,6 @@
 {
   "name": "@schibstedspain/openads-appnexus-prebid",
-  "version": "0.0.1",
+  "version": "1.0.2",
   "description": "OpenAds AppNexus connector with Prebid features",
   "main": "dist/",
   "scripts": {
