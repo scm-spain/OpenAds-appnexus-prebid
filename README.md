@@ -2,7 +2,7 @@
 [![Build Status](https://travis-ci.org/scm-spain/OpenAds-appnexus-prebid.svg?branch=master)](https://travis-ci.org/scm-spain/OpenAds-appnexus-prebid)
 [![codecov](https://codecov.io/gh/scm-spain/Openads-appnexus-prebid/branch/master/graph/badge.svg)](https://codecov.io/gh/scm-spain/Openads-appnexus-prebid)
 [![GitHub license](https://img.shields.io/github/license/scm-spain/Openads-appnexus-prebid.svg)](https://github.com/scm-spain/Openads-appnexus-prebid/blob/master/LICENSE)
-[![npm version](https://img.shields.io/npm/v/@schibstedspain/Openads-appnexus-prebid.svg)](https://www.npmjs.com/package/@schibstedspain/Openads-appnexus-prebid)
+[![npm version](https://img.shields.io/npm/v/@schibstedspain/openads-appnexus-prebid.svg)](https://www.npmjs.com/package/@schibstedspain/openads-appnexus-prebid)
 
 # About
 OpenAds AppNexus connector with [Prebid](https://prebid.org) features.
