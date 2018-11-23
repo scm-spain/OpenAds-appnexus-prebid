@@ -9,7 +9,7 @@ import {
 } from './event/events'
 
 import {TIMEOUT_DEBOUNCE, TIMEOUT_PREBID} from './timeout/timeout'
-import Debouncer from './service/debouncer'
+import Debouncer from './service/Debouncer'
 
 /**
  * @class
