@@ -10,6 +10,14 @@ export default class AstClient {
   }
 
   /**
+   * Sets the global page options
+   * @param data
+   */
+  setPageOpts(data) {
+    throw new Error('AppNexusConnector#setPageOpts must be implemented')
+  }
+
+  /**
    * Defines onEvent
    * @param event
    * @param targetId

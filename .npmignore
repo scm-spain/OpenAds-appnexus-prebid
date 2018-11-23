@@ -3,3 +3,5 @@ coverage
 .travis.yml
 .idea
 .eslintignore
+.github
+schibstedspain-openads-appnexus-prebid-*.tgz
