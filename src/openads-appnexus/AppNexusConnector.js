@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+
 import {
   AD_AVAILABLE,
   AD_BAD_REQUEST,
