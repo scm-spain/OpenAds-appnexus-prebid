@@ -65,7 +65,8 @@ describe('AppNexus Connector', function() {
     const mock = {
       addAdUnits: () => mock,
       requestBids: () => mock,
-      setTargetingForAst: () => mock
+      setTargetingForAst: () => mock,
+      setConfig: () => mock
     }
     return mock
   }
@@ -76,6 +77,7 @@ describe('AppNexus Connector', function() {
   const createloggerProviderMock = () => ({
     debugMode: () => null
   })
+
   describe('constructor', () => {
     it('should call the setPageOpts if options are given', done => {
       const givenPageOpts = {
@@ -102,7 +104,34 @@ describe('AppNexus Connector', function() {
         })
         .catch(e => done(e))
     })
+
+    it('should call the setConfig if options ara given', done => {
+      const givenPrebidConfig = {
+        bidderTimeout: 1500,
+        priceGranularity: 'dense',
+        enableSendAllBids: false
+      }
+
+      const prebidClientMock = createPrebidClientMock()
+      const setConfigSpy = sinon.spy(prebidClientMock, 'setConfig')
+
+      Promise.resolve()
+        .then(
+          () =>
+            new AppNexusConnector({
+              prebidConfig: givenPrebidConfig,
+              prebidClient: prebidClientMock
+            })
+        )
+        .then(() => {
+          expect(setConfigSpy.called).to.be.true
+          expect(setConfigSpy.args[0][0]).to.deep.equal(givenPrebidConfig)
+          done()
+        })
+        .catch(e => done(e))
+    })
   })
+
   describe('refresh method', () => {
     it('Should refresh one Ad', done => {
       const givenAd = makeAgiven(1)
@@ -115,7 +144,8 @@ describe('AppNexus Connector', function() {
 
       const prebidClientMock = {
         requestBids: requestObj => requestObj.bidsBackHandler(),
-        setTargetingForAst: () => null
+        setTargetingForAst: () => null,
+        setConfig: () => null
       }
       const astClientMock = {
         push: f => f(),
@@ -142,6 +172,11 @@ describe('AppNexus Connector', function() {
         pageOpts: {
           member: 1000
         },
+        prebidConfig: {
+          bidderTimeout: 1500,
+          priceGranularity: 'dense',
+          enableSendAllBids: false
+        },
         logger: createLoggerMock(),
         astClient: astClientMock,
         prebidClient: prebidClientMock,
@@ -160,7 +195,6 @@ describe('AppNexus Connector', function() {
             removeSpy.args[0][0].id,
             'should remove the Ad id from the repository'
           ).to.equal(givenAd.id)
-
           expect(
             modifyTagSpy.calledOnce,
             'ast modifyTag should be called one time'
@@ -172,26 +206,22 @@ describe('AppNexus Connector', function() {
             targetId: givenAd.id,
             data: givenAd.specification.appnexus
           })
-
           expect(refreshSpy.calledOnce, 'ast refresh should be called one time')
             .to.be.true
           expect(
             refreshSpy.args[0][0],
             'ast refresh should be called with an array of ids'
           ).to.deep.equal([givenAd.id])
-
           expect(requestBidsSpy.calledOnce, 'prebid should request bids').to.be
             .true
           expect(
             requestBidsSpy.args[0][0].adUnits,
             'prebid should request bids for an array of given ad units'
           ).to.deep.equal([givenAd.specification.prebid])
-
           expect(
             setTargetingForAstSpy.calledOnce,
             'prebid should set AST targeting'
           ).to.be.true
-
           expect(ad).to.deep.equal(expectedAd)
           done()
         })
@@ -204,7 +234,8 @@ describe('AppNexus Connector', function() {
 
       const prebidClientMock = {
         requestBids: requestObj => requestObj.bidsBackHandler(),
-        setTargetingForAst: () => null
+        setTargetingForAst: () => null,
+        setConfig: () => null
       }
       const astClientMock = {
         push: f => f(),
@@ -230,6 +261,11 @@ describe('AppNexus Connector', function() {
       const appNexusConnector = new AppNexusConnector({
         pageOpts: {
           member: 1000
+        },
+        prebidConfig: {
+          bidderTimeout: 1500,
+          priceGranularity: 'dense',
+          enableSendAllBids: false
         },
         logger: createLoggerMock(),
         astClient: astClientMock,
@@ -288,7 +324,8 @@ describe('AppNexus Connector', function() {
 
       const prebidClientMock = {
         requestBids: ({bidsBackHandler}) => bidsBackHandler(),
-        setTargetingForAst: () => null
+        setTargetingForAst: () => null,
+        setConfig: () => null
       }
       const astClientMock = {
         push: f => f(),
@@ -314,6 +351,11 @@ describe('AppNexus Connector', function() {
       const appNexusConnector = new AppNexusConnector({
         pageOpts: {
           member: 1000
+        },
+        prebidConfig: {
+          bidderTimeout: 1500,
+          priceGranularity: 'dense',
+          enableSendAllBids: false
         },
         logger: createLoggerMock(),
         astClient: astClientMock,
@@ -373,6 +415,7 @@ describe('AppNexus Connector', function() {
       ).to.be.true
     })
   })
+
   describe('display method', () => {
     it('Should return a promise', () => {
       const appNexusConnector = new AppNexusConnector({
@@ -384,6 +427,7 @@ describe('AppNexus Connector', function() {
       })
       expect(appNexusConnector.display({})).to.be.a('promise')
     })
+
     it('Should show the received target id', done => {
       const astClientMock = createAstClientMock()
       const showSpy = sinon.spy(astClientMock, 'showTag')
@@ -421,8 +465,27 @@ describe('AppNexus Connector', function() {
         loggerProvider: createloggerProviderMock(),
         prebidClient: createPrebidClientMock()
       })
-      expect(appNexusConnector.loadAd({})).to.be.a('promise')
+
+      const givenId = 1
+
+      const givenSpecification = {
+        source: 'appNexusPrebid',
+        appnexus: {
+          placement: 2,
+          sizes: [[3, 4]],
+          segmentation: {a: 5},
+          native: {b: 6}
+        }
+      }
+
+      expect(
+        appNexusConnector.loadAd({
+          id: givenId,
+          specification: givenSpecification
+        })
+      ).to.be.a('promise')
     })
+
     it('should call loadtags without prebid information', done => {
       const astClientMock = createAstClientMock()
       const adRepositoryMock = createAdRepositoryMock({
@@ -612,7 +675,8 @@ describe('AppNexus Connector', function() {
       const prebidClientMock = {
         addAdUnits: () => {},
         requestBids: requestObj => requestObj.bidsBackHandler(),
-        setTargetingForAst: () => null
+        setTargetingForAst: () => null,
+        setConfig: () => null
       }
 
       const adRepositoryMock = {
@@ -623,6 +687,11 @@ describe('AppNexus Connector', function() {
       const appNexusConnector = new AppNexusConnector({
         pageOpts: {
           member: 1000
+        },
+        prebidConfig: {
+          bidderTimeout: 1500,
+          priceGranularity: 'dense',
+          enableSendAllBids: false
         },
         logger: createLoggerMock(),
         astClient: astClientMock,
@@ -705,7 +774,8 @@ describe('AppNexus Connector', function() {
       const prebidClientMock = {
         addAdUnits: () => {},
         requestBids: requestObj => requestObj.bidsBackHandler(),
-        setTargetingForAst: () => null
+        setTargetingForAst: () => null,
+        setConfig: () => null
       }
 
       const adRepositoryMock = {
@@ -716,6 +786,11 @@ describe('AppNexus Connector', function() {
       const appNexusConnector = new AppNexusConnector({
         pageOpts: {
           member: 1000
+        },
+        prebidConfig: {
+          bidderTimeout: 1500,
+          priceGranularity: 'dense',
+          enableSendAllBids: false
         },
         logger: createLoggerMock(),
         astClient: astClientMock,

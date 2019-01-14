@@ -20,6 +20,7 @@ import Debouncer from './service/Debouncer'
 export default class AppNexusConnector {
   constructor({
     pageOpts,
+    prebidConfig,
     logger,
     astClient,
     adRepository,
@@ -32,9 +33,9 @@ export default class AppNexusConnector {
     this._loggerProvider = loggerProvider
     this._prebidClient = prebidClient
     this._pageOpts = pageOpts
-    if (this._pageOpts) {
-      this._astClient.setPageOpts(this._pageOpts)
-    }
+    this._prebidConfig = prebidConfig
+    if (this._pageOpts) this._astClient.setPageOpts(this._pageOpts)
+    if (this._prebidConfig) this._prebidClient.setConfig(this._prebidConfig)
     this._loadAdDebouncer = new Debouncer({
       onDebounce: this._onLoadAdDebounce.bind(this),
       debounceTimeout: TIMEOUT_DEBOUNCE
@@ -106,7 +107,7 @@ export default class AppNexusConnector {
         normalizedInputs.tags.forEach(input =>
           this._defineAppNexusTag({id: input.id, tag: input.data})
         )
-        if (normalizedInputs.adUnits.length > 0) {
+        if (normalizedInputs.adUnits.length > 0 && this._prebidClient) {
           this._prebidClient.addAdUnits({adUnits: normalizedInputs.adUnits})
           this._prebidClient.requestBids({
             timeout: TIMEOUT_PREBID,
