@@ -38,7 +38,7 @@ export default class PrebidClientImpl {
   }
 
   setConfig(config) {
-    this._logger.debug(this._logger.name, '| setConfig has been called.')
+    this._logger.debug(this._logger.name, '| setConfig | config:', config)
     this._pbjs.que.push(() => this._pbjs.setConfig(config))
     return this
   }
