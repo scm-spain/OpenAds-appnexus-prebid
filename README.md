@@ -21,7 +21,7 @@ npm install --save @schibstedspain/openads-appnexus-prebid
 # Usage
 
 To use it with OpenAds first you must install and import OpenAds as explained in the [readme](https://github.com/scm-spain/OpenAds)
-After that you must init the AppNexusConnector with the configuration member account
+After that you must init the AppNexusConnector with the configuration member account and your especific Prebid configuration
 Now you are able to put the instance as a source available in OpenAds configuration
 
 ```ecmascript 6
@@ -31,6 +31,13 @@ import AppNexusConnector from '@schibstedspain/openads-appnexus-prebid'
 const appNexusConnector = AppNexusConnector.init({
   config: {
     member: 4242
+  },
+  prebidConfig: {
+    config: {
+      bidderTimeout: 1000,
+      priceGranularity: "dense",
+      enableSendAllBids: false
+    }
   }
 })
 

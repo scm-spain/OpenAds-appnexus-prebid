@@ -36,4 +36,10 @@ export default class PrebidClientImpl {
     this._pbjs.que.push(() => this._pbjs.setTargetingForAst())
     return this
   }
+
+  setConfig(config) {
+    this._logger.debug(this._logger.name, '| setConfig | config:', config)
+    this._pbjs.que.push(() => this._pbjs.setConfig(config))
+    return this
+  }
 }
