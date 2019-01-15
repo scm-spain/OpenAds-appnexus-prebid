@@ -15,7 +15,8 @@ describe('PrebidClientImpl Test', () => {
     debug: false,
     addAdUnits: () => null,
     requestBids: () => null,
-    setTargetingForAst: () => null
+    setTargetingForAst: () => null,
+    setConfig: () => null
   })
 
   describe('constructor method', () => {
@@ -139,6 +140,31 @@ describe('PrebidClientImpl Test', () => {
       prebidClient.setTargetingForAst({adUnits: givenParameters})
       expect(queSpy.calledOnce).to.be.true
       expect(setTargetingForAstSpy.calledOnce).to.be.true
+    })
+  })
+
+  describe('setConfig method', () => {
+    it('should call the prebid setConfig method via que', () => {
+      const prebidMock = createPrebidMock()
+      const loggerMock = createLoggerMock()
+      const windowMock = {
+        pbjs: prebidMock
+      }
+      const prebidClient = new PrebidClientImpl({
+        logger: loggerMock,
+        window: windowMock
+      })
+      const givenPrebidConfig = {
+        bidderTimeout: 1500,
+        priceGranularity: 'dense',
+        enableSendAllBids: false
+      }
+      const queSpy = sinon.spy(prebidMock.que, 'push')
+      const setConfigSpy = sinon.spy(prebidMock, 'setConfig')
+
+      prebidClient.setConfig(givenPrebidConfig)
+      expect(queSpy.calledOnce).to.be.true
+      expect(setConfigSpy.calledOnce).to.be.true
     })
   })
 })

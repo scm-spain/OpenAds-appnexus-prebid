@@ -25,6 +25,7 @@ export default class Container {
   _buildAppNexusConnector() {
     return new AppNexusConnector({
       pageOpts: this._config.pageOpts,
+      prebidConfig: this._config.prebidConfig,
       loggerProvider: this.getInstance({key: 'LogProvider'}),
       logger: this.getInstance({key: 'Logger'}),
       astClient: this.getInstance({key: 'AstClient'}),

@@ -29,4 +29,12 @@ export default class PrebidClient {
   setTargetngForAst() {
     throw new Error('AppNexusConnector#setTargetForAst must be implemented')
   }
+
+  /**
+   * Defines setConfig.
+   * @param config
+   */
+  setConfig(config) {
+    throw new Error('AppNexusConnector#setConfig must be implemented')
+  }
 }
