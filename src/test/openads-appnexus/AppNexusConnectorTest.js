@@ -104,32 +104,6 @@ describe('AppNexus Connector', function() {
         })
         .catch(e => done(e))
     })
-
-    it('should call the setConfig if options ara given', done => {
-      const givenPrebidConfig = {
-        bidderTimeout: 1500,
-        priceGranularity: 'dense',
-        enableSendAllBids: false
-      }
-
-      const prebidClientMock = createPrebidClientMock()
-      const setConfigSpy = sinon.spy(prebidClientMock, 'setConfig')
-
-      Promise.resolve()
-        .then(
-          () =>
-            new AppNexusConnector({
-              prebidConfig: givenPrebidConfig,
-              prebidClient: prebidClientMock
-            })
-        )
-        .then(() => {
-          expect(setConfigSpy.called).to.be.true
-          expect(setConfigSpy.args[0][0]).to.deep.equal(givenPrebidConfig)
-          done()
-        })
-        .catch(e => done(e))
-    })
   })
 
   describe('refresh method', () => {
@@ -701,6 +675,7 @@ describe('AppNexus Connector', function() {
       })
 
       const addAdUnitsSpy = sinon.spy(prebidClientMock, 'addAdUnits')
+      const setConfigSpy = sinon.spy(prebidClientMock, 'setConfig')
       const requestBidsSpy = sinon.spy(prebidClientMock, 'requestBids')
       const loadTagsSpy = sinon.spy(astClientMock, 'loadTags')
 
@@ -720,7 +695,7 @@ describe('AppNexus Connector', function() {
         .then(() => {
           setTimeout(() => {
             expect(addAdUnitsSpy.calledOnce).to.be.true
-
+            expect(setConfigSpy.called).to.be.true
             expect(requestBidsSpy.calledOnce).to.be.true
 
             expect(addAdUnitsSpy.args[0][0].adUnits).to.deep.equal(
@@ -800,6 +775,7 @@ describe('AppNexus Connector', function() {
       })
 
       const addAdUnitsSpy = sinon.spy(prebidClientMock, 'addAdUnits')
+      const setConfigSpy = sinon.spy(prebidClientMock, 'setConfig')
       const requestBidsSpy = sinon.spy(prebidClientMock, 'requestBids')
       const loadTagsSpy = sinon.spy(astClientMock, 'loadTags')
 
@@ -828,7 +804,7 @@ describe('AppNexus Connector', function() {
         .then(() => {
           setTimeout(() => {
             expect(addAdUnitsSpy.calledOnce).to.be.true
-
+            expect(setConfigSpy.called).to.be.true
             expect(requestBidsSpy.calledOnce).to.be.true
 
             expect(addAdUnitsSpy.args[0][0].adUnits).to.deep.equal(
