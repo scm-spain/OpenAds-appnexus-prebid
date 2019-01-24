@@ -109,8 +109,9 @@ export default class AppNexusConnector {
         if (normalizedInputs.adUnits.length > 0 && this._prebidClient) {
           this._prebidClient.addAdUnits({adUnits: normalizedInputs.adUnits})
 
-          if (this._prebidConfig && this._prebidConfig.core)
+          if (this._prebidConfig && this._prebidConfig.core) {
             this._prebidClient.setConfig(this._prebidConfig.core)
+          }
 
           this._prebidClient.requestBids({
             timeout: TIMEOUT_PREBID,
@@ -120,10 +121,11 @@ export default class AppNexusConnector {
             }
           })
 
-          if (this._prebidConfig && this._prebidConfig.bidderSettings)
+          if (this._prebidConfig && this._prebidConfig.bidderSettings) {
             this._prebidClient.setBidderSettings(
               this._prebidConfig.bidderSettings
             )
+          }
         } else {
           this._astClient.loadTags()
         }
