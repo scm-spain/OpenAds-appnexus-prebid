@@ -147,9 +147,11 @@ describe('AppNexus Connector', function() {
           member: 1000
         },
         prebidConfig: {
-          bidderTimeout: 1500,
-          priceGranularity: 'dense',
-          enableSendAllBids: false
+          core: {
+            bidderTimeout: 1500,
+            priceGranularity: 'dense',
+            enableSendAllBids: false
+          }
         },
         logger: createLoggerMock(),
         astClient: astClientMock,
@@ -237,9 +239,11 @@ describe('AppNexus Connector', function() {
           member: 1000
         },
         prebidConfig: {
-          bidderTimeout: 1500,
-          priceGranularity: 'dense',
-          enableSendAllBids: false
+          core: {
+            bidderTimeout: 1500,
+            priceGranularity: 'dense',
+            enableSendAllBids: false
+          }
         },
         logger: createLoggerMock(),
         astClient: astClientMock,
@@ -327,9 +331,11 @@ describe('AppNexus Connector', function() {
           member: 1000
         },
         prebidConfig: {
-          bidderTimeout: 1500,
-          priceGranularity: 'dense',
-          enableSendAllBids: false
+          core: {
+            bidderTimeout: 1500,
+            priceGranularity: 'dense',
+            enableSendAllBids: false
+          }
         },
         logger: createLoggerMock(),
         astClient: astClientMock,
@@ -650,7 +656,8 @@ describe('AppNexus Connector', function() {
         addAdUnits: () => {},
         requestBids: requestObj => requestObj.bidsBackHandler(),
         setTargetingForAst: () => null,
-        setConfig: () => null
+        setConfig: () => null,
+        setBidderSettings: () => null
       }
 
       const adRepositoryMock = {
@@ -663,9 +670,65 @@ describe('AppNexus Connector', function() {
           member: 1000
         },
         prebidConfig: {
-          bidderTimeout: 1500,
-          priceGranularity: 'dense',
-          enableSendAllBids: false
+          core: {
+            bidderTimeout: 1500,
+            priceGranularity: 'dense',
+            enableSendAllBids: false
+          },
+          bidderSettings: {
+            standard: {
+              adserverTargeting: [
+                {
+                  key: 'hb_bidder',
+                  val: function(bidResponse) {
+                    return bidResponse.bidderCode
+                  }
+                },
+                {
+                  key: 'hb_adid',
+                  val: function(bidResponse) {
+                    return bidResponse.adId
+                  }
+                },
+                {
+                  key: 'hb_pb',
+                  val: function(bidResponse) {
+                    return bidResponse.pbMg
+                  }
+                },
+                {
+                  key: 'hb_size',
+                  val: function(bidResponse) {
+                    return bidResponse.size
+                  }
+                },
+                {
+                  key: 'hb_source',
+                  val: function(bidResponse) {
+                    return bidResponse.source
+                  }
+                },
+                {
+                  key: 'hb_format',
+                  val: function(bidResponse) {
+                    return bidResponse.mediaType
+                  }
+                },
+                {
+                  key: 'hb_cache_id',
+                  val: function(bidResponse) {
+                    return bidResponse.videoCacheKey
+                  }
+                },
+                {
+                  key: 'hb_uuid',
+                  val: function(bidResponse) {
+                    return bidResponse.videoCacheKey
+                  }
+                }
+              ]
+            }
+          }
         },
         logger: createLoggerMock(),
         astClient: astClientMock,
@@ -678,6 +741,10 @@ describe('AppNexus Connector', function() {
       const setConfigSpy = sinon.spy(prebidClientMock, 'setConfig')
       const requestBidsSpy = sinon.spy(prebidClientMock, 'requestBids')
       const loadTagsSpy = sinon.spy(astClientMock, 'loadTags')
+      const setBidderSettingsSpy = sinon.spy(
+        prebidClientMock,
+        'setBidderSettings'
+      )
 
       const expectedprebidUnitsArray = [
         {
@@ -697,6 +764,7 @@ describe('AppNexus Connector', function() {
             expect(addAdUnitsSpy.calledOnce).to.be.true
             expect(setConfigSpy.called).to.be.true
             expect(requestBidsSpy.calledOnce).to.be.true
+            expect(setBidderSettingsSpy.called).to.be.true
 
             expect(addAdUnitsSpy.args[0][0].adUnits).to.deep.equal(
               expectedprebidUnitsArray
@@ -750,7 +818,8 @@ describe('AppNexus Connector', function() {
         addAdUnits: () => {},
         requestBids: requestObj => requestObj.bidsBackHandler(),
         setTargetingForAst: () => null,
-        setConfig: () => null
+        setConfig: () => null,
+        setBidderSettings: () => null
       }
 
       const adRepositoryMock = {
@@ -763,9 +832,11 @@ describe('AppNexus Connector', function() {
           member: 1000
         },
         prebidConfig: {
-          bidderTimeout: 1500,
-          priceGranularity: 'dense',
-          enableSendAllBids: false
+          core: {
+            bidderTimeout: 1500,
+            priceGranularity: 'dense',
+            enableSendAllBids: false
+          }
         },
         logger: createLoggerMock(),
         astClient: astClientMock,
@@ -778,6 +849,10 @@ describe('AppNexus Connector', function() {
       const setConfigSpy = sinon.spy(prebidClientMock, 'setConfig')
       const requestBidsSpy = sinon.spy(prebidClientMock, 'requestBids')
       const loadTagsSpy = sinon.spy(astClientMock, 'loadTags')
+      const setBidderSettingsSpy = sinon.spy(
+        prebidClientMock,
+        'setBidderSettings'
+      )
 
       const expectedprebidUnitsArray = [
         {
@@ -806,6 +881,7 @@ describe('AppNexus Connector', function() {
             expect(addAdUnitsSpy.calledOnce).to.be.true
             expect(setConfigSpy.called).to.be.true
             expect(requestBidsSpy.calledOnce).to.be.true
+            expect(setBidderSettingsSpy.called).to.be.false
 
             expect(addAdUnitsSpy.args[0][0].adUnits).to.deep.equal(
               expectedprebidUnitsArray
