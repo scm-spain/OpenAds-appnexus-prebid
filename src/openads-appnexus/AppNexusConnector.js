@@ -34,7 +34,13 @@ export default class AppNexusConnector {
     this._prebidClient = prebidClient
     this._pageOpts = pageOpts
     this._prebidConfig = prebidConfig
-    if (this._pageOpts) this._astClient.setPageOpts(this._pageOpts)
+
+    if (this._pageOpts) {
+      this._astClient.setPageOpts(this._pageOpts)
+    }
+
+    this._prebidClient.setConfig({config: this._prebidConfig})
+
     this._loadAdDebouncer = new Debouncer({
       onDebounce: this._onLoadAdDebounce.bind(this),
       debounceTimeout: TIMEOUT_DEBOUNCE
@@ -109,10 +115,6 @@ export default class AppNexusConnector {
         if (normalizedInputs.adUnits.length > 0 && this._prebidClient) {
           this._prebidClient.addAdUnits({adUnits: normalizedInputs.adUnits})
 
-          if (this._prebidConfig && this._prebidConfig.core) {
-            this._prebidClient.setConfig(this._prebidConfig.core)
-          }
-
           this._prebidClient.requestBids({
             timeout: TIMEOUT_PREBID,
             bidsBackHandler: () => {
@@ -120,12 +122,6 @@ export default class AppNexusConnector {
               this._astClient.loadTags()
             }
           })
-
-          if (this._prebidConfig && this._prebidConfig.bidderSettings) {
-            this._prebidClient.setBidderSettings(
-              this._prebidConfig.bidderSettings
-            )
-          }
         } else {
           this._astClient.loadTags()
         }

@@ -78,6 +78,41 @@ describe('AppNexus Connector', function() {
     debugMode: () => null
   })
 
+  const getValidPrebidConfig = () => {
+    return {
+      core: {
+        bidderTimeout: 1500,
+        priceGranularity: 'dense',
+        enableSendAllBids: false
+      },
+      bidderSettings: {
+        standard: {
+          adserverTargeting: [
+            {
+              key: 'hb_bidder',
+              val: function(bidResponse) {
+                return bidResponse.bidderCode
+              }
+            },
+            {
+              key: 'pt0',
+              val: function(bidResponse) {
+                return bidResponse.adId
+              }
+            },
+            {
+              key: 'hb_pb',
+              val: function(bidResponse) {
+                var bucket = (parseFloat(bidResponse.pbCg) * 100).toFixed()
+                return isNaN(bucket) ? '0' : bucket
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+
   describe('constructor', () => {
     it('should call the setPageOpts if options are given', done => {
       const givenPageOpts = {
@@ -85,12 +120,16 @@ describe('AppNexus Connector', function() {
       }
       const astClientMock = createAstClientMock()
       const setPageOptsSpy = sinon.spy(astClientMock, 'setPageOpts')
+      const prebidClientMock = createPrebidClientMock()
+      const setConfigSpy = sinon.spy(prebidClientMock, 'setConfig')
+
       Promise.resolve()
         .then(
           () =>
             new AppNexusConnector({
               pageOpts: givenPageOpts,
-              astClient: astClientMock
+              astClient: astClientMock,
+              prebidClient: prebidClientMock
             })
         )
         .then(() => {
@@ -100,6 +139,7 @@ describe('AppNexus Connector', function() {
             setPageOptsSpy.args[0][0],
             'setPageOpts should receive the pageOpts'
           ).to.deep.equal(givenPageOpts)
+          expect(setConfigSpy.calledOnce).to.be.true
           done()
         })
         .catch(e => done(e))
@@ -146,13 +186,7 @@ describe('AppNexus Connector', function() {
         pageOpts: {
           member: 1000
         },
-        prebidConfig: {
-          core: {
-            bidderTimeout: 1500,
-            priceGranularity: 'dense',
-            enableSendAllBids: false
-          }
-        },
+        prebidConfig: getValidPrebidConfig(),
         logger: createLoggerMock(),
         astClient: astClientMock,
         prebidClient: prebidClientMock,
@@ -238,13 +272,7 @@ describe('AppNexus Connector', function() {
         pageOpts: {
           member: 1000
         },
-        prebidConfig: {
-          core: {
-            bidderTimeout: 1500,
-            priceGranularity: 'dense',
-            enableSendAllBids: false
-          }
-        },
+        prebidConfig: getValidPrebidConfig(),
         logger: createLoggerMock(),
         astClient: astClientMock,
         prebidClient: prebidClientMock,
@@ -330,13 +358,7 @@ describe('AppNexus Connector', function() {
         pageOpts: {
           member: 1000
         },
-        prebidConfig: {
-          core: {
-            bidderTimeout: 1500,
-            priceGranularity: 'dense',
-            enableSendAllBids: false
-          }
-        },
+        prebidConfig: getValidPrebidConfig(),
         logger: createLoggerMock(),
         astClient: astClientMock,
         prebidClient: prebidClientMock,
@@ -382,7 +404,8 @@ describe('AppNexus Connector', function() {
         logger: createLoggerMock(),
         astClient: createAstClientMock(),
         adRepository: createAdRepositoryMock(),
-        loggerProvider: loggerProviderMock
+        loggerProvider: loggerProviderMock,
+        prebidClient: createPrebidClientMock()
       })
 
       appNexusConnector.enableDebug({debug: true})
@@ -403,7 +426,8 @@ describe('AppNexus Connector', function() {
         logger: createLoggerMock(),
         astClient: createAstClientMock(),
         adRepository: createAdRepositoryMock(),
-        loggerProvider: createloggerProviderMock()
+        loggerProvider: createloggerProviderMock(),
+        prebidClient: createPrebidClientMock()
       })
       expect(appNexusConnector.display({})).to.be.a('promise')
     })
@@ -416,7 +440,8 @@ describe('AppNexus Connector', function() {
         logger: createLoggerMock(),
         astClient: astClientMock,
         adRepository: createAdRepositoryMock(),
-        loggerProvider: createloggerProviderMock()
+        loggerProvider: createloggerProviderMock(),
+        prebidClient: createPrebidClientMock()
       })
       const givenId = 1
 
@@ -669,67 +694,7 @@ describe('AppNexus Connector', function() {
         pageOpts: {
           member: 1000
         },
-        prebidConfig: {
-          core: {
-            bidderTimeout: 1500,
-            priceGranularity: 'dense',
-            enableSendAllBids: false
-          },
-          bidderSettings: {
-            standard: {
-              adserverTargeting: [
-                {
-                  key: 'hb_bidder',
-                  val: function(bidResponse) {
-                    return bidResponse.bidderCode
-                  }
-                },
-                {
-                  key: 'hb_adid',
-                  val: function(bidResponse) {
-                    return bidResponse.adId
-                  }
-                },
-                {
-                  key: 'hb_pb',
-                  val: function(bidResponse) {
-                    return bidResponse.pbMg
-                  }
-                },
-                {
-                  key: 'hb_size',
-                  val: function(bidResponse) {
-                    return bidResponse.size
-                  }
-                },
-                {
-                  key: 'hb_source',
-                  val: function(bidResponse) {
-                    return bidResponse.source
-                  }
-                },
-                {
-                  key: 'hb_format',
-                  val: function(bidResponse) {
-                    return bidResponse.mediaType
-                  }
-                },
-                {
-                  key: 'hb_cache_id',
-                  val: function(bidResponse) {
-                    return bidResponse.videoCacheKey
-                  }
-                },
-                {
-                  key: 'hb_uuid',
-                  val: function(bidResponse) {
-                    return bidResponse.videoCacheKey
-                  }
-                }
-              ]
-            }
-          }
-        },
+        prebidConfig: getValidPrebidConfig(),
         logger: createLoggerMock(),
         astClient: astClientMock,
         prebidClient: prebidClientMock,
@@ -738,14 +703,8 @@ describe('AppNexus Connector', function() {
       })
 
       const addAdUnitsSpy = sinon.spy(prebidClientMock, 'addAdUnits')
-      const setConfigSpy = sinon.spy(prebidClientMock, 'setConfig')
       const requestBidsSpy = sinon.spy(prebidClientMock, 'requestBids')
       const loadTagsSpy = sinon.spy(astClientMock, 'loadTags')
-      const setBidderSettingsSpy = sinon.spy(
-        prebidClientMock,
-        'setBidderSettings'
-      )
-
       const expectedprebidUnitsArray = [
         {
           code: 1,
@@ -762,14 +721,10 @@ describe('AppNexus Connector', function() {
         .then(() => {
           setTimeout(() => {
             expect(addAdUnitsSpy.calledOnce).to.be.true
-            expect(setConfigSpy.called).to.be.true
             expect(requestBidsSpy.calledOnce).to.be.true
-            expect(setBidderSettingsSpy.called).to.be.true
-
             expect(addAdUnitsSpy.args[0][0].adUnits).to.deep.equal(
               expectedprebidUnitsArray
             )
-
             expect(loadTagsSpy.calledOnce, 'should have loaded the tag').to.be
               .true
             done()
@@ -831,13 +786,7 @@ describe('AppNexus Connector', function() {
         pageOpts: {
           member: 1000
         },
-        prebidConfig: {
-          core: {
-            bidderTimeout: 1500,
-            priceGranularity: 'dense',
-            enableSendAllBids: false
-          }
-        },
+        prebidConfig: getValidPrebidConfig(),
         logger: createLoggerMock(),
         astClient: astClientMock,
         prebidClient: prebidClientMock,
@@ -846,14 +795,8 @@ describe('AppNexus Connector', function() {
       })
 
       const addAdUnitsSpy = sinon.spy(prebidClientMock, 'addAdUnits')
-      const setConfigSpy = sinon.spy(prebidClientMock, 'setConfig')
       const requestBidsSpy = sinon.spy(prebidClientMock, 'requestBids')
       const loadTagsSpy = sinon.spy(astClientMock, 'loadTags')
-      const setBidderSettingsSpy = sinon.spy(
-        prebidClientMock,
-        'setBidderSettings'
-      )
-
       const expectedprebidUnitsArray = [
         {
           code: 1,
@@ -879,14 +822,10 @@ describe('AppNexus Connector', function() {
         .then(() => {
           setTimeout(() => {
             expect(addAdUnitsSpy.calledOnce).to.be.true
-            expect(setConfigSpy.called).to.be.true
             expect(requestBidsSpy.calledOnce).to.be.true
-            expect(setBidderSettingsSpy.called).to.be.false
-
             expect(addAdUnitsSpy.args[0][0].adUnits).to.deep.equal(
               expectedprebidUnitsArray
             )
-
             expect(loadTagsSpy.calledOnce, 'should have loaded the tag').to.be
               .true
             done()
@@ -904,7 +843,8 @@ describe('AppNexus Connector', function() {
         logger: createLoggerMock(),
         astClient: createAstClientMock(),
         adRepository: adRepositoryMock,
-        loggerProvider: createloggerProviderMock()
+        loggerProvider: createloggerProviderMock(),
+        prebidClient: createPrebidClientMock()
       })
       const givenId = 1
 
@@ -916,11 +856,7 @@ describe('AppNexus Connector', function() {
           segmentation: {a: 5},
           native: {b: 6}
         },
-        prebid: {
-          code: 1,
-          mediaTypes: [[3, 4]],
-          bids: [100, 101]
-        }
+        prebidConfig: getValidPrebidConfig()
       }
       appNexusConnector
         .loadAd({

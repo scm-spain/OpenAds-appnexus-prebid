@@ -34,15 +34,7 @@ export default class PrebidClient {
    * Defines setConfig.
    * @param config
    */
-  setConfig(config) {
+  setConfig({config}) {
     throw new Error('AppNexusConnector#setConfig must be implemented')
-  }
-
-  /**
-   * Overrides the default settings with the ones passed as a parameter.
-   * @param bidderSettings
-   */
-  setBidderSettings(bidderSettings) {
-    throw new Error('AppNexusConnector#setBidderSettings must be implemented')
   }
 }
