@@ -144,7 +144,7 @@ describe('PrebidClientImpl Test', () => {
   })
 
   describe('setConfig method', () => {
-    it('should call the prebid setConfig method via que', () => {
+    it('should call the prebid setConfig method and set bidderSettings via que', () => {
       const prebidMock = createPrebidMock()
       const loggerMock = createLoggerMock()
       const windowMock = {
@@ -154,17 +154,24 @@ describe('PrebidClientImpl Test', () => {
         logger: loggerMock,
         window: windowMock
       })
+      const givenBidderSettings = {
+        test: 'test'
+      }
       const givenPrebidConfig = {
-        bidderTimeout: 1500,
-        priceGranularity: 'dense',
-        enableSendAllBids: false
+        core: {
+          bidderTimeout: 1500,
+          priceGranularity: 'dense',
+          enableSendAllBids: false
+        },
+        bidderSettings: givenBidderSettings
       }
       const queSpy = sinon.spy(prebidMock.que, 'push')
       const setConfigSpy = sinon.spy(prebidMock, 'setConfig')
 
-      prebidClient.setConfig(givenPrebidConfig)
+      prebidClient.setConfig({config: givenPrebidConfig})
       expect(queSpy.calledOnce).to.be.true
       expect(setConfigSpy.calledOnce).to.be.true
+      expect(windowMock.pbjs.bidderSettings).to.be.equal(givenBidderSettings)
     })
   })
 })

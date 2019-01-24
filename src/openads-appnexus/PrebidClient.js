@@ -34,7 +34,7 @@ export default class PrebidClient {
    * Defines setConfig.
    * @param config
    */
-  setConfig(config) {
+  setConfig({config}) {
     throw new Error('AppNexusConnector#setConfig must be implemented')
   }
 }

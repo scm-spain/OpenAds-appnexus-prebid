@@ -33,10 +33,13 @@ const appNexusConnector = AppNexusConnector.init({
     member: 4242
   },
   prebidConfig: {
-    config: {
+    core: {
       bidderTimeout: 1000,
       priceGranularity: "dense",
       enableSendAllBids: false
+    },
+    bidderSettings: {
+      ...
     }
   }
 })
@@ -47,6 +50,68 @@ const openAds = OpenAds.init({config:{
   }
 }})
 ```
+## Configuration
+
+Configuration object is divided in two objects:
+* **config**: related with AppNexus (ast.js)
+* **prebidConfig**: related with PreBid (pbjs.js)
+    * **core** : (Optional) Settings to override the default Prebid core configuration.
+    * **bidderSettings**: (Optional) Settings to override the default Prebid settings used by the bidders.
+
+### bidderSettings
+
+An example of **bidderSettings** overriding the standard configuration applied to all bidders:
+
+```json
+{
+    standard: {
+        adserverTargeting: [{
+            key: "hb_bidder",
+            val: function(bidResponse) {
+                return bidResponse.bidderCode;
+            }
+        }, {
+            key: "hb_adid",
+            val: function(bidResponse) {
+                return bidResponse.adId;
+            }
+        }, {
+            key: "hb_pb",
+            val: function(bidResponse) {
+                return bidResponse.pbMg;
+            }
+        }, {
+            key: 'hb_size',
+            val: function (bidResponse) {
+                return bidResponse.size;
+            }
+        }, {
+            key: 'hb_source',
+            val: function (bidResponse) {
+                return bidResponse.source;
+            }
+        }, {
+            key: 'hb_format',
+            val: function (bidResponse) {
+                return bidResponse.mediaType;
+            }
+        }, {
+            key: 'hb_cache_id',
+            val: function (bidResponse) {
+                return bidResponse.videoCacheKey;
+            }
+        }, {
+            key: 'hb_uuid',
+            val: function (bidResponse) {
+                return bidResponse.videoCacheKey;
+            }
+        }]
+    }
+}
+
+```
+
+More info can be found [here](http://prebid.org/dev-docs/publisher-api-reference.html#module_pbjs.bidderSettings).
 
 # Preconditions
 
