@@ -17,7 +17,6 @@ export default class AstClientImpl {
   }
 
   setPageOpts(data) {
-    this._logger.debug(this._logger.name, '| setPageOpts | pageOpts:', data)
     this._apnTag.anq.push(() => this._apnTag.setPageOpts(data))
     return this
   }

@@ -38,7 +38,6 @@ export default class PrebidClientImpl {
   }
 
   setConfig({config = {}} = {}) {
-    this._logger.debug(this._logger.name, '| setConfig | config:', config)
     this._pbjs.que.push(() => {
       this._pbjs.setConfig(config.core)
       this._pbjs.bidderSettings = config.bidderSettings
