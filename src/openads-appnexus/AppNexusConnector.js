@@ -218,6 +218,15 @@ export default class AppNexusConnector {
   enableDebug({debug}) {
     this._astClient.debugMode({debug})
     this._loggerProvider.debugMode({debug})
+    if (debug) {
+      this._logger.debug(
+        this._logger.name,
+        '| Enabled debug mode on AppNexusConnector | pageOpts:',
+        this._pageOpts,
+        '| prebidConfig:',
+        this._prebidConfig
+      )
+    }
   }
 }
 const consumer = adRepository => id => status => data =>
