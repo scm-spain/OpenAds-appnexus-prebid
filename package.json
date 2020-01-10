@@ -4,13 +4,16 @@
   "description": "OpenAds AppNexus connector with Prebid features",
   "main": "dist/",
   "scripts": {
+    "phoenix": "rm -Rf node_modules && rm -Rf package-lock.json && npm install",
     "cleanDistFolder": "rm -Rf ./dist",
     "prepublishOnly": "npm run cleanDistFolder && npm run build",
     "build": "npm run cleanDistFolder && babel src --ignore test --out-dir dist ",
     "test": "mocha --recursive --require babel-polyfill --require babel-core/register \"src/test/**/*.js\"",
     "lint": "sui-lint js",
     "coverage": "istanbul cover --report html _mocha -- ./src/*test --recursive --compilers js:babel-register",
-    "coverage:ci": "istanbul cover _mocha -- ./src/*test --recursive --compilers js:babel-register && codecov"
+    "coverage:ci": "istanbul cover _mocha -- ./src/*test --recursive --compilers js:babel-register && codecov",
+    "check": "npm run lint && npm run test",
+    "versiona": "node versiona.js"
   },
   "repository": {
     "type": "git",
@@ -38,7 +41,8 @@
     "jsdom": "^11.10.0",
     "mocha": "^5.2.0",
     "onchange": "^3.3.0",
-    "sinon": "^2.3.4"
+    "sinon": "^2.3.4",
+    "versiona": "^4.2.1"
   },
   "pre-commit": [
     "lint",
