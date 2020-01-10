@@ -6,3 +6,4 @@ coverage
 .eslintignore
 .github
 schibstedspain-openads-appnexus-prebid-*.tgz
+versiona.js
