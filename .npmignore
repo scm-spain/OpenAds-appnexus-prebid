@@ -7,3 +7,5 @@ coverage
 .github
 schibstedspain-openads-appnexus-prebid-*.tgz
 versiona.js
+.nyc_output
+dist/test
