@@ -223,7 +223,7 @@ describe('Debouncer', () => {
         ]
       ]
 
-      let result = []
+      const result = []
 
       const debounceCallback = input => {
         result.push(input)

@@ -12,11 +12,8 @@ export default class AdListenerRepository {
   }
 
   find({id}) {
-    return Promise.resolve().then(
-      () =>
-        this._ads.has(id)
-          ? this._ads.get(id)
-          : this._registerAdSubscription({id})
+    return Promise.resolve().then(() =>
+      this._ads.has(id) ? this._ads.get(id) : this._registerAdSubscription({id})
     )
   }
 
