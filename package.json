@@ -1,5 +1,5 @@
 {
-  "name": "@schibstedspain/openads-appnexus-prebid",
+  "name": "@adv-ui/openads-appnexus-prebid",
   "version": "2.0.3",
   "description": "OpenAds AppNexus connector with Prebid features",
   "main": "dist/",
@@ -34,7 +34,7 @@
     "@babel/plugin-transform-modules-commonjs": "^7.8.0",
     "@babel/register": "^7.8.0",
     "@babel/runtime": "^7.8.0",
-    "@s-ui/lint": "^3.14.0",
+    "@s-ui/lint": "3",
     "babel-loader": "^8.0.6",
     "babel-preset-sui": "^2.14.0",
     "chai": "^4.2.0",
@@ -43,7 +43,7 @@
     "mocha": "^7.0.0",
     "nyc": "^15.0.0",
     "sinon": "^8.0.4",
-    "versiona": "^4.2.1"
+    "versiona": "4"
   },
   "pre-commit": [
     "lint",
@@ -63,7 +63,7 @@
     ]
   },
   "dependencies": {
-    "@schibstedspain/openads-connector-api": "^2.0.1",
+    "@adv-ui/openads-connector-api": "3",
     "loglevel": "^1.6.1"
   },
   "prettier": "./node_modules/@s-ui/lint/.prettierrc.js",

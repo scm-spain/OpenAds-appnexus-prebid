@@ -2,7 +2,7 @@
 [![Build Status](https://travis-ci.org/scm-spain/OpenAds-appnexus-prebid.svg?branch=master)](https://travis-ci.org/scm-spain/OpenAds-appnexus-prebid)
 [![codecov](https://codecov.io/gh/scm-spain/Openads-appnexus-prebid/branch/master/graph/badge.svg)](https://codecov.io/gh/scm-spain/Openads-appnexus-prebid)
 [![GitHub license](https://img.shields.io/github/license/scm-spain/Openads-appnexus-prebid.svg)](https://github.com/scm-spain/Openads-appnexus-prebid/blob/master/LICENSE)
-[![npm version](https://img.shields.io/npm/v/@schibstedspain/openads-appnexus-prebid.svg)](https://www.npmjs.com/package/@schibstedspain/openads-appnexus-prebid)
+[![npm version](https://img.shields.io/npm/v/@adv-ui/openads-appnexus-prebid.svg)](https://www.npmjs.com/package/@adv-ui/openads-appnexus-prebid)
 
 # About
 OpenAds AppNexus connector with [Prebid](https://prebid.org) features.
@@ -11,11 +11,11 @@ OpenAds AppNexus connector with [Prebid](https://prebid.org) features.
 To build your own module take a look at the section ```Build your own module```
 
 # Installation
-AppNexus Prebid module is available as the ```@schibstedspain/openads-appnexus-prebid``` package on [npm](https://www.npmjs.com/package/@schibstedspain/Openads-appnexus-prebid)
+AppNexus Prebid module is available as the ```@adv-ui/openads-appnexus-prebid``` package on [npm](https://www.npmjs.com/package/@adv-ui/Openads-appnexus-prebid)
 
 To install the stable version:
 ```
-npm install --save @schibstedspain/openads-appnexus-prebid
+npm install --save @adv-ui/openads-appnexus-prebid
 ```
 
 # Usage
@@ -25,8 +25,8 @@ After that you must init the AppNexusConnector with the configuration member acc
 Now you are able to put the instance as a source available in OpenAds configuration
 
 ```ecmascript 6
-import OpenAds from '@schibstedspain/openads'
-import AppNexusConnector from '@schibstedspain/openads-appnexus-prebid'
+import OpenAds from '@adv-ui/openads'
+import AppNexusConnector from '@adv-ui/openads-appnexus-prebid'
 
 const appNexusConnector = AppNexusConnector.init({
   config: {
